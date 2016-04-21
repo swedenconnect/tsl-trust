@@ -1,2 +1,6 @@
-# tsl-trust
-Trust Status List service
+# TSL-Trust
+
+*Trust Status List service*
+
+> TODO: edit
+
