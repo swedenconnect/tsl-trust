@@ -1,0 +1,193 @@
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="urn:se:tillvaxtverket:tsltrust:1.0:sigval:report"
+    xmlns:tslt="urn:se:tillvaxtverket:tsltrust:1.0:sigval:report">
+
+    <xsd:annotation>
+        <xsd:documentation xml:lang="en">
+     TslTrust signature validation result schema.
+        </xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:element name="SignedDocumentValidation" type="tslt:SignedDocumentValidationType"/>
+    <xsd:complexType name="SignedDocumentValidationType">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="requestNonce" type="xsd:string"/>
+            <xsd:element name="policyName" type="tslt:NonEmptyString"/>
+            <xsd:element name="policyInformation" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="documentName" type="tslt:NonEmptyString" minOccurs="0"/>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="signatureValidation"
+                type="tslt:SignatureValidationType"/>
+            <xsd:element name="verificationConclusion" type="xsd:string"/>
+            <xsd:element name="verificationErrorMessage" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="version" type="tslt:NonEmptyNormalizedString" default="1.0"/>
+        <xsd:attribute name="documentType" type="tslt:NonEmptyNormalizedString"/>
+        <xsd:attribute default="en" name="language" type="xsd:language"/>
+    </xsd:complexType>
+    <xsd:complexType name="SignatureValidationType">
+        <xsd:sequence>
+            <xsd:element name="validationResult">
+                <xsd:simpleType>
+                    <xsd:restriction base="tslt:SignatureResult"/>
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="validationErrorMessages" type="tslt:StatusMessagesType" minOccurs="0"/>
+            <xsd:element name="claimedSigningTime" type="xsd:dateTime" minOccurs="0"/>
+            <xsd:element name="euQualifications" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="signatureAlgorithms" type="tslt:OIDAlgorithmsType" minOccurs="0"/>
+            <xsd:element name="signerStatusCheck" type="tslt:CertStatusValue" minOccurs="0"/>
+            <xsd:element name="signerDistinguishedName" type="tslt:DistinguishedNameType"
+                minOccurs="0"/>
+            <xsd:element name="signerCertificateInfo" type="tslt:CertificateInformationType"
+                minOccurs="0"/>
+            <xsd:element name="timeStamp" type="tslt:TimeStampInformationType" minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="signatureName" type="tslt:NonEmptyString"/>
+    </xsd:complexType>
+    <xsd:complexType name="StatusMessagesType">
+        <xsd:sequence>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="message"
+                type="tslt:AttributeValueType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="TimeStampInformationType">
+        <xsd:sequence>
+            <xsd:element name="time" type="xsd:dateTime"/>
+            <xsd:element name="statusMessages" type="tslt:StatusMessagesType" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="DistinguishedNameType">
+        <xsd:sequence>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="attributeValue"
+                type="tslt:AttributeValueType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="AttributeValueType">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type" type="xsd:string"> </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    <xsd:complexType name="CertificateInformationType">
+        <xsd:sequence>
+            <xsd:element name="certificate" type="tslt:CertificateType"/>
+            <xsd:element minOccurs="0" name="issuerCertificateInfo"
+                type="tslt:CertificateInformationType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="CertificateType">
+        <xsd:sequence>
+            <xsd:element name="subjectName" type="tslt:DistinguishedNameType"/>
+            <xsd:element name="issuerName" type="tslt:DistinguishedNameType"/>
+            <xsd:element name="notValidBefore" type="xsd:dateTime"/>
+            <xsd:element name="notValidAfter" type="xsd:dateTime"/>
+            <xsd:element name="certificateStatus" type="tslt:CertificateStatusType"/>
+            <xsd:element name="publicKeyAlgorithm" type="tslt:PublicKeyType"> </xsd:element>
+            <xsd:element maxOccurs="1" minOccurs="0" name="certificateExtensions"
+                type="tslt:CertificateExtensionsType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType mixed="false" name="CertificateValidationSourceType">
+        <xsd:simpleContent>
+            <xsd:extension base="tslt:NonEmptyURIType">
+                <xsd:attribute name="type" type="tslt:CertStatusMethod"/>
+                <xsd:attribute name="status" type="tslt:CertStatusValue"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    <xsd:complexType name="CertificateStatusType">
+        <xsd:sequence>
+            <xsd:element name="validityStatus" type="tslt:CertStatusValue"/>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="validationSource"
+                type="tslt:CertificateValidationSourceType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="CertificateExtensionsType">
+        <xsd:sequence>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="certificateExtension"
+                type="tslt:CertificateExtensionType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="CertificateExtensionType">
+        <xsd:sequence maxOccurs="1" minOccurs="0">
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter"
+                type="tslt:ExtensionParameterType"/>
+            <xsd:element name="property" type="tslt:ExtensionPropertyType" maxOccurs="unbounded"
+                minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="critical" type="xsd:boolean" default="false"/>
+        <xsd:attribute name="OID" type="tslt:NonEmptyString"/>
+        <xsd:attribute name="name" type="tslt:NonEmptyString"/>
+    </xsd:complexType>
+    <xsd:complexType name="ExtensionPropertyType">
+        <xsd:sequence>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter"
+                type="tslt:ExtensionParameterType"/>
+        </xsd:sequence>
+        <xsd:attribute name="type" type="tslt:NonEmptyNormalizedString"/>
+    </xsd:complexType>
+    <xsd:complexType name="ExtensionParameterType">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type" type="xsd:string"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    <xsd:complexType name="PublicKeyType">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="keyLength" type="xsd:int"/>
+                <xsd:attribute name="OID" type="xsd:string"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    <xsd:simpleType name="NonEmptyURIType">
+        <xsd:restriction base="xsd:anyURI">
+            <xsd:minLength value="1"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="NonEmptyString">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="1"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="NonEmptyNormalizedString">
+        <xsd:restriction base="xsd:normalizedString">
+            <xsd:minLength value="1"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="CertStatusValue">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="valid"/>
+            <xsd:enumeration value="revoked"/>
+            <xsd:enumeration value="undetermined"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="CertStatusMethod">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="CRL"/>
+            <xsd:enumeration value="OCSP"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="SignatureResult">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="valid"/>
+            <xsd:enumeration value="invalid"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:complexType name="OIDAlgorithmType">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="OID" type="xsd:string"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    <xsd:complexType name="OIDAlgorithmsType">
+        <xsd:sequence>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="algorithm"
+                type="tslt:OIDAlgorithmType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:schema>

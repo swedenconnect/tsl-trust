@@ -1,0 +1,392 @@
+
+body {
+    font-family: Verdana, Arial, sans-serif;
+    font-size: smaller;
+    color: #555;
+    width: 95%;
+    padding-bottom: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    background-color: #fdfdfd;
+}
+
+h1 {
+    letter-spacing: 6px;
+    font-size: 1.6em;
+    color: #be7429;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+h2 {
+    text-align: left;
+    letter-spacing: 6px;
+    font-size: 1.4em;
+    color: #be7429;
+    font-weight: normal;
+}
+h3 {
+    margin-bottom: 2px;
+    margin-top: 10px;
+}
+
+div.top{
+
+    background-color: #ffffff;
+}
+div.leftTop {
+
+    float: left;
+    margin-right: 20px;
+}
+div.centerTop{
+
+    background-color: #ffffff;
+    text-align: center;
+    min-width: 600px;
+    min-height: 50px;
+}
+div.rightTop{
+
+    float:right;
+    margin-left: 20px;
+}
+
+div.menu{
+
+    background-color: #CCDDEE;
+    border-color: #003399;
+    border-width: 1px;
+    border-style: solid;
+}
+
+div#tslDiv {
+    max-width: 25%;
+    float: left;
+}
+div#policyInfoTableDiv {
+    float: left;
+    margin-right: 20px;
+}
+
+div#tspDiv {
+    max-width: 350px;
+    float: left;
+}
+
+div#tsDiv {
+    max-width: 200px;
+    float: left;
+}
+div#dbTableDiv{
+    overflow:scroll;
+}
+div#xmlDataDiv{
+    float:right;
+    width:100%;
+    background-color: #fffffe;
+}
+
+div#infoDataDiv{
+    background-color: #fffffe;    
+}
+
+div#xmlButtonDiv, iframe#xmlIframe{
+    background-color: #bbbbbb;
+}
+
+div#tslInfoDiv {
+    background-color: #ffffff;
+    float:right;
+    width:75%;
+}
+div#presentationInfoDiv {
+    background-color: #ffffff;
+    float:right;
+}
+
+
+div#infoHeadDiv{
+    height: 20px;
+    background-color: #000033;
+    font-weight: bolder;
+    color: #fffffb;
+    vertical-align: middle;
+}
+
+div#titleDiv {
+    color: #021616;
+    font-size: 14px;
+    font-weight: bolder;
+    height: 20px;
+    padding-top: 10px;
+    padding-bottom: 5px;
+}
+
+div#infoBodyDiv {
+    width:100%;
+    background-color: #fffffe;
+
+}
+
+div#tslCheckerMainDiv {
+    background-color: #fffff5;    
+}
+
+div#confTargetDiv{    
+    color: #02023e;
+}
+
+.infobar{
+
+    background-color: #be7429;
+    color: #ffffff;
+}
+
+
+table {
+    padding: 2px;
+    font-family: sans-serif;
+}
+
+.titleTable{
+    padding: 0px;    
+}
+
+table.titleTable{
+    width: 100%;
+}
+td#titleLogo{
+    width:150px;
+}
+
+table.menu {
+    background-color: #15669F;    
+    color: #ffffff;
+}
+
+table.infoTable {
+
+    border-width: 1px;
+    padding: 0px;
+    border-color: #fffffe;
+}
+
+table.policyTable {
+    width: 100%
+}
+
+table.cctable{
+    vertical-align: middle;
+}
+
+td {
+    padding: 1px;
+    padding-right: 5px;
+}
+
+td.menu:hover, td.subMenu:hover {    
+    background-color: #003399;
+    color:#ffffff;
+    cursor:default;
+}
+
+td.selected {
+
+    background-color: #003399;
+    color: #ffffff;
+    cursor:default;
+}
+
+td.subMenu {
+    background-color: #eeeeee;    
+    color: #330000;
+}
+
+td.tableSectionHead {
+
+    vertical-align: top;
+    font-weight: bold;
+    background-color: #e3e9fc;
+}
+td.tableUnfoldHead {
+
+    background-color: #000066;
+    color: #ffffff;
+    font-weight: bold;
+}
+td.tableUnfoldBold {
+    font-weight: bold;
+
+    color: #3b0000;
+}
+
+td.tableFoldIcon {
+
+    vertical-align: top;
+    padding: 0px;
+}
+td.attrName {
+
+    color: #666600;
+    font-style: italic;
+    vertical-align: top;
+}
+td.attrValue ,td.propertyValue{
+
+    color: #333333;
+    vertical-align: top;
+}
+td.inheritBgHead {
+    background-color: inherit;
+    font-weight: bold;    
+    vertical-align: top;
+}
+td.propertyName {
+    color: #002c33;
+    vertical-align: top;
+}
+
+td.extensionName{
+    font-style: italic;
+    font-weight: bold;
+    vertical-align: top;
+}
+
+td.extensionPadding{
+    vertical-align: top;
+    padding-bottom: 10px;
+}
+
+td.codeText{
+
+    font-family: 'Courier New',Courier,monospace;
+}
+td.error, span.error {
+
+    color: #660000;
+    font-style: italic;
+    font-weight: bold;
+}
+td.good, span.good{
+
+    color: #1b401b;
+}
+span.labelText{
+
+    color: #234723;
+}
+td.warning, span.warning{
+    color: #996600;
+}
+
+tr.data{
+
+    color: #000000;
+
+    background-color: #e8e6e6;
+}
+
+td.invertedHead {
+
+    background-color: #f3f1f3;
+    color: #392706;
+    vertical-align: top;
+    font-weight: 400;
+    font-style: italic;
+}
+
+tr.data:hover, tr.tableEven:hover, tr.tableOdd:hover{
+    background-color: #dadaa8;
+    cursor: pointer;
+}
+
+
+tr.dataSelected, td.dataSelected{
+
+    background-color: #000033;
+    color: #ffffff;
+    cursor: pointer;
+}
+tr.tableHead{
+
+    background-color: #000033;
+    font-weight: bolder;
+    color: #ffffcc;
+    height: 18px;
+}
+tr.tableOdd, tr.tableSectionRowOdd{
+
+    background-color: #e5e5e5;
+    cursor: pointer;
+}
+tr.tableEven {
+    background-color: #ffffff;
+    cursor: pointer;
+}
+
+tr.tableStriped{
+    background-color: #e5e5e5;    
+}
+    
+    
+tr.tableNeutral {
+    background-color: #ffffff;    
+}
+
+tr.tableSectionRowEven{
+    background-color: #fffffe;
+}
+
+span.dbSort{
+
+    padding-left: 40px;
+}
+span.counterString {    
+    color: #999999;
+    font-style: italic;
+    font-weight: normal;
+}
+input.dbCheck{
+    margin-left: 10px;
+}
+
+a {
+    color: #be7429;
+    text-decoration: none;
+}
+
+a.image {
+
+    color: #ffffff;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+
+b.colored {
+    color: #002c33;
+}
+
+strong.colored{
+
+    color: #3a1f1a;
+    margin-top: 5px;
+}
+
+strong.fat{
+
+    color: #333333;
+    font-weight: bolder;
+    text-decoration: underline;
+    font-size: large;
+}
+
+span.userIdText{
+    
+    color: #000066;
+}
+
+

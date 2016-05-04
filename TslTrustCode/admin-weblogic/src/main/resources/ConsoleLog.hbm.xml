@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="se.tillvaxtverket.tsltrust.weblogic.data.ConsoleLogRecord" table="console">
+        <id name="timeStr" column="logtime" type="string" length="50"/>
+        <property name="event" column="logevent" type="string" length="255"/>
+        <property name="description" column="logdesc" type="string" length="500"/>
+        <property name="origin" column="logorigin" type="string" length="255"/>    
+    </class>
+</hibernate-mapping>
