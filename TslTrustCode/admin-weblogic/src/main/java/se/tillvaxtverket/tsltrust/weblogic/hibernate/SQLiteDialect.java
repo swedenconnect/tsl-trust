@@ -67,6 +67,8 @@ public class SQLiteDialect extends Dialect {
                 stringType));
     }
 
+    
+    
     @Override
     public boolean supportsIdentityColumns() {
         return true;

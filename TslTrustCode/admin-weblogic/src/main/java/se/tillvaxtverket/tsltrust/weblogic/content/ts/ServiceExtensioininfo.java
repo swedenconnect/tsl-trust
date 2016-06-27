@@ -28,7 +28,6 @@ import se.tillvaxtverket.tsltrust.weblogic.models.InfoTableElements;
 import se.tillvaxtverket.tsltrust.weblogic.models.InfoTableModel;
 import se.tillvaxtverket.tsltrust.weblogic.models.InfoTableSection;
 import java.util.logging.Logger;
-import org.hibernate.Criteria;
 import se.tillvaxtverket.tsltrust.common.tsl.ServiceHistoryInstance;
 import se.tillvaxtverket.tsltrust.common.tsl.sie.AdditionalServiceInformationSie;
 import se.tillvaxtverket.tsltrust.common.tsl.sie.ExpiredCertsRevocationInfoSie;
