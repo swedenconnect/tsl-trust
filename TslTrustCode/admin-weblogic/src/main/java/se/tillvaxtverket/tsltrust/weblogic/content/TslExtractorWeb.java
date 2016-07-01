@@ -329,7 +329,7 @@ public class TslExtractorWeb implements HtmlConstants, TTConstants {
             "999"
         });
 
-        for (int i = 0; i < tslList.size() + 1; i++) {
+        for (int i = 1; i < tslList.size() + 1; i++) {
             TrustServiceList tsl;
             if (i == 0) {
                 tsl = currentLotl;
