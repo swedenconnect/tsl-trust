@@ -65,6 +65,7 @@ public class CertificateUtils implements Constants {
                 //throw new RuntimeException("X509 error: "+ e.getMessage(), e);
             }
         } catch (Exception ex) {
+            //LOG.info("Failed to parse Cert:"+String.valueOf(Base64Coder.encode(certData)));
         }
         return null;
     }

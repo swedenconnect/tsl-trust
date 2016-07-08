@@ -60,8 +60,10 @@ public class TrustService {
                 X509Certificate cert = TslUtils.getServiceDigitalIdentityCert(certData);
                 sdiCertList.add(cert);
             }
-            sdiCertData = sdiCertList.get(0).getEncoded();
-            sdiCert = sdiCertList.get(0);
+            if (!sdiCertList.isEmpty()) {
+                sdiCertData = sdiCertList.get(0).getEncoded();
+                sdiCert = sdiCertList.get(0);
+            }
         } catch (Exception ex) {
         }
     }

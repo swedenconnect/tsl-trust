@@ -561,7 +561,7 @@ public class TslExtractorWeb implements HtmlConstants, TTConstants {
                 tsDataSect.setSectionHeadingClasses(new String[]{TABLE_SECTION_HEAD, TABLE_SECTION_HEAD});
 
                 InfoTableElements tsDataElm = tsDataSect.getElements();
-
+                
                 TrustServiceInformation.addTrustServiceInformation(tsDataElm, ts, tm, itUtil);
 
 //                tsDataElm.addNewSection(tm, "Service Type").addNewElement(ExtractorUtil.stripRefUrl(ts.getType()));
