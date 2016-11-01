@@ -6,12 +6,12 @@
         <init-param>
             <description>Storage location for trust info</description>
             <param-name>TslTrustPublishLocation</param-name>
-            <param-value>/opt/webapp/tsltrust-esens/admin/publish</param-value>
+            <param-value>/opt/webapp/tsltrust-eln/admin/publish</param-value>
         </init-param>
         <init-param>
             <description>Data location for sig-service export</description>
             <param-name>SigServicePublishLocation</param-name>
-            <param-value>/opt/webapp/sigservice-sig-esens/ca-publish</param-value>
+            <param-value>/opt/webapp/sigservice-sig-eln/ca-publish</param-value>
         </init-param>
     </servlet>
     <servlet-mapping>
