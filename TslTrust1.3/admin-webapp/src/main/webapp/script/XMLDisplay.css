@@ -1,0 +1,42 @@
+@charset "utf-8";
+/* CSS Document */
+body {
+    color: #555555;
+    font-family: sans-serif,Verdana,Arial;
+    font-size: smaller;
+    padding: 5px;
+    width: 100%;
+}
+
+.Utility {
+    color: black;
+}
+.NodeName {
+    color: #500050;
+    font-weight: bold;
+    font-size: small;
+}
+.AttributeName {
+    color: black;
+    font-weight: bold;
+    font-size: small;
+}
+.AttributeValue {
+    color: blue;
+}
+.NodeValue {
+    color: black;
+}
+.Element {
+    border-left: thin solid #988567;
+    margin-top: 1px;
+    padding-top: 0;
+    font-size: small;
+}
+.Clickable {
+    color: #333300;
+    cursor: pointer;
+    font-weight: 900;
+    vertical-align: middle;
+    font-size: larger;
+}
