@@ -34,7 +34,7 @@ public class DaemonTask extends ServletDaemon {
     @Override
     void doDaemonTask() {
         long startTime = System.currentTimeMillis();
-        TslCacheDaemon tslDaemon = new TslCacheDaemon();
+        TslCacheDaemon tslDaemon = new TslCacheDaemon(taskComplete, threadSleep);
         tslDaemon.run();
         LOG.info("TSL information recached... Updating Db");
         CertAuthOperations certDaemon = new CertAuthOperations();
@@ -43,7 +43,7 @@ public class DaemonTask extends ServletDaemon {
         long elapsed = System.currentTimeMillis()-startTime;
         String nextUpdate = "Next TSL recache scheduled at "+tFormat.format(new Date(System.currentTimeMillis()+(threadSleep-elapsed)));
 
-        LOG.info(alive ? "TSL Trust recache completed. " +nextUpdate: "TSL recache interrupted. "+nextUpdate);
+        LOG.info(alive ? "TSL recache completed. " +nextUpdate: "TSL recache interrupted. "+nextUpdate);
         taskComplete = true;
     }
 
