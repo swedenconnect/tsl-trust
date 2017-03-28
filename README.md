@@ -17,3 +17,5 @@ A scaled down version of this application, showing the popular browsing tool of 
 ## Deployment guide
 
 A deployment guide is provided in the doc folder.
+
+> [Deployment Guide](https://github.com/elegnamnden/tsl-trust/blob/dev/docs/TslTrustDeploymentGuide.md)
