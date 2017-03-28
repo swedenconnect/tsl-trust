@@ -23,6 +23,7 @@ import se.tillvaxtverket.tsltrust.common.utils.core.FnvHash;
 import se.tillvaxtverket.tsltrust.common.utils.general.CertificateUtils;
 import se.tillvaxtverket.tsltrust.common.utils.general.KsCertFactory;
 import java.math.BigInteger;
+import java.security.MessageDigest;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -34,9 +35,8 @@ import se.tillvaxtverket.tsltrust.common.tsl.TrustServiceProvider;
 import se.tillvaxtverket.tsltrust.weblogic.data.ConsoleLogRecord;
 
 /**
- * Abstract class providing access to the TSL trust service database.
- * THis class provides basic functionality for database updates caused by 
- * TSL recaching.
+ * Abstract class providing access to the TSL trust service database. THis class
+ * provides basic functionality for database updates caused by TSL recaching.
  */
 public abstract class TslCertDb {
 
@@ -117,8 +117,23 @@ public abstract class TslCertDb {
                 for (TrustService ts : tsp.getTrustServices()) {
                     byte[] tslCert = ts.getServiceDigitalIdentityData();
                     if (tslCert != null) { // If trust service has certificate
-                        String tslCertHash = FnvHash.getFNV1aToHex(tslCert); // Get cert FNV1a hash
-                        String tslCertID = tslCertHash + ts.getType().trim()+tslMD.getCountry().getIsoCode().toUpperCase();
+                        String tslCertID = getCertId(tslCert, ts, tsp, tslMD);
+                        //String tslCertHash = FnvHash.getFNV1aToHex(tslCert); // Get cert FNV1a hash
+                        //String tslCertID = tslCertHash + ts.getType().trim()+tslMD.getCountry().getIsoCode().toUpperCase();
+
+                        //debug
+                        if (tslMdMap.containsKey(tslCertID)) {
+                            TrustService duplServ = tsMap.get(tslCertID);
+                            String dupName = duplServ.getName();
+                            TrustServiceProvider duplTsp = tspMap.get(tslCertID);
+                            String dupTspName = duplTsp.getName();
+
+                            String tspName = tsp.getName();
+                            String srvName = ts.getName();
+
+                            int asdf = 0;
+                        }
+
                         tslMdMap.put(tslCertID, tslMD);
                         tspMap.put(tslCertID, tsp);
                         tsMap.put(tslCertID, ts);
@@ -130,7 +145,10 @@ public abstract class TslCertDb {
         // Fore each database record
         for (TslCertificates dbCert : dbList) {
             // Get compare string for each cert = cert hash + service type
-            String dbCertID = dbCert.getTslCertHash() + dbCert.getTrustServiceType().trim()+dbCert.getTerritory().toUpperCase();
+            //String dbCertID = dbCert.getTslCertHash() + dbCert.getTrustServiceType().trim()+dbCert.getTerritory().toUpperCase();
+
+            String dbCertID = getCertId(dbCert);
+
             if (tslMdMap.containsKey(dbCertID)) {
                 TslMetaData tslMD = tslMdMap.get(dbCertID);
                 TrustServiceProvider tsp = tspMap.get(dbCertID);
@@ -161,11 +179,35 @@ public abstract class TslCertDb {
 
         }
 
-
         log.addConsoleEvent(new ConsoleLogRecord("TSL Recache", changedList.size() + " Trust Services with updated TSL info", "TSL Extractor"));
         return changedList;
     }
 
+    private static String getCertId(TslCertificates dbCert) {
+        byte[] certBytes = Base64Coder.decodeLines(dbCert.getTslCertificate());
+        return getCertId(certBytes, dbCert.getTrustServiceType(), dbCert.getTsName(), dbCert.getTspName(), dbCert.getTerritory());
+    }
+
+    private static String getCertId(byte[] tslCert, TrustService ts, TrustServiceProvider tsp, TslMetaData tslMD) {
+        return getCertId(tslCert, ts.getType(), ts.getName(), tsp.getName(), tslMD.getCountry().getIsoCode());
+    }
+    
+    private static String getCertId (byte[] certBytes, String serviceType, String serviceName, String tspName, String territory){
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            md.update(certBytes);
+            md.update(serviceType.trim().toLowerCase().getBytes("UTF-8"));
+            md.update(serviceName.trim().toLowerCase().getBytes("UTF-8"));
+            md.update(tspName.trim().toLowerCase().getBytes("UTF-8"));
+            md.update(territory.trim().toLowerCase().getBytes("UTF-8"));
+            String certId = String.valueOf(Base64Coder.encode(md.digest()));
+            return certId;
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public static List<TslCertificates> getAbsentCertificates(List<TslCertificates> dbList, List<TslMetaData> tslMdList, LogDbUtil log) {
 

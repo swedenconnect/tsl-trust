@@ -5,7 +5,7 @@
     <context-param>
         <description>Directory for server data storage</description>
         <param-name>DataLocation</param-name>
-        <param-value>/opt/webapp/tsltrust/admin/</param-value>
+        <param-value>/opt/webapp/tsltrust-eln/admin/</param-value>
     </context-param>
     <listener>
         <description>ServletContextListener</description>
