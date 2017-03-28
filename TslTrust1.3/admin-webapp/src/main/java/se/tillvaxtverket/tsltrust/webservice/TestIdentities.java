@@ -41,43 +41,43 @@ public class TestIdentities extends HttpServlet {
     String[][] testIdentities = new String[][]{
         new String[]{
             "Lee Falk",
-            "https://idp.esp-idp.se/idp",
+            "https://idp.svelegtest.se/idp",
             "198504051569",
             "personalIdentityNumber"
         },
         new String[]{
             "Kit Walker",
-            "https://idp.esp-idp.se/idp",
+            "https://idp.svelegtest.se/idp",
             "196501021010",
             "personalIdentityNumber"
         },
         new String[]{
             "Fantomen",
-            "https://idp.esp-idp.se/idp",
+            "https://idp.svelegtest.se/idp",
             "196501021111",
             "personalIdentityNumber"
         },
         new String[]{
             "Diana Palmer",
-            "https://idp.esp-idp.se/idp",
+            "https://idp.svelegtest.se/idp",
             "196501022222",
             "personalIdentityNumber"
         },
         new String[]{
             "Guran Bandar",
-            "https://idp.esp-idp.se/idp",
+            "https://idp.svelegtest.se/idp",
             "196501023333",
             "personalIdentityNumber"
         },
         new String[]{
             "Rex King",
-            "https://idp.esp-idp.se/idp",
+            "https://idp.svelegtest.se/idp",
             "196501024444",
             "personalIdentityNumber"
         },
         new String[]{
             "Lamanda Luaga",
-            "https://idp.esp-idp.se/idp",
+            "https://idp.svelegtest.se/idp",
             "196501025555",
             "personalIdentityNumber"
         }

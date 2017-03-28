@@ -40,7 +40,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import se.tillvaxtverket.tsltrust.common.config.ConfigData;
-import se.tillvaxtverket.tsltrust.common.config.ConfigFactory;
 import se.tillvaxtverket.tsltrust.common.jsonobjects.DiscoveryData;
 import se.tillvaxtverket.tsltrust.common.jsonobjects.RequestPassword;
 

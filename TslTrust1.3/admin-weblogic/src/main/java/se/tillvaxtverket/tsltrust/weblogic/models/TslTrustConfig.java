@@ -50,20 +50,20 @@ public class TslTrustConfig implements ConfigData {
         CaOrgUnitName = "Signature validation";
         CaSerialNumber = "SE555555-5555";
         CaCommonName = "Swedish eSENS Pilot - Test validation service";
-        CaFileStorageLocation = "/Users/stefan/Sites/tsltrust"; // "/opt/webapp/tsltrust/admin/";
-        CaDistributionURL = "http://localhost/~stefan/tsltrust"; // "https/tsltrust.esp-ttadmin.se/trustinfo" 
-        LogDbConnectionUrl = "jdbc:mysql://localhost:3306/tsltrust_log"; // "jdbc:mysql://192.168.160.2:3306/tsltrust_log"
+        CaFileStorageLocation = "/opt/webapp/tsltrust/admin/publish";
+        CaDistributionURL = "https://ttadmin.example.com/trustinfo";
+        LogDbConnectionUrl = "jdbc:mysql://localhost:3306/tsltrust_log";
         LogDbUserName = "tsltrust";
-        LogDbPassword = "tsltrust987";
-        PolicyDbConnectionUrl = "jdbc:mysql://localhost:3306/tsltrust_policy"; // // "jdbc:mysql://192.168.160.2:3306/tsltrust_policy"
+        LogDbPassword = "tsltrustPw";
+        PolicyDbConnectionUrl = "jdbc:mysql://localhost:3306/tsltrust_policy"; 
         PolicyDbUserName = "tsltrust";
-        PolicyDbPassword = "tsltrust987";
+        PolicyDbPassword = "tsltrustPw";
         DbAutoCreateTables = "false";
         DbVerboseLogging = "false";
         SuperAdminID = "198504051569";
         SuperAdminAttribute = "personalIdentityNumber";
-        SuperAdminIdP = "https://idp.esp-idp.se/idp";
-        DiscoFeedUrl = "https://ds.esp-disco.se/disco/json?action=idplist";
+        SuperAdminIdP = "https://idp.svelegtest.se/idp";
+        DiscoFeedUrl = "https://eid.svelegtest.se/disco/json?action=idplist";
     }
 
     @Override

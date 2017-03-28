@@ -118,7 +118,7 @@ public abstract class TslCertDb {
                     byte[] tslCert = ts.getServiceDigitalIdentityData();
                     if (tslCert != null) { // If trust service has certificate
                         String tslCertHash = FnvHash.getFNV1aToHex(tslCert); // Get cert FNV1a hash
-                        String tslCertID = tslCertHash + ts.getType().trim();
+                        String tslCertID = tslCertHash + ts.getType().trim()+tslMD.getCountry().getIsoCode().toUpperCase();
                         tslMdMap.put(tslCertID, tslMD);
                         tspMap.put(tslCertID, tsp);
                         tsMap.put(tslCertID, ts);
@@ -130,7 +130,7 @@ public abstract class TslCertDb {
         // Fore each database record
         for (TslCertificates dbCert : dbList) {
             // Get compare string for each cert = cert hash + service type
-            String dbCertID = dbCert.getTslCertHash() + dbCert.getTrustServiceType().trim();
+            String dbCertID = dbCert.getTslCertHash() + dbCert.getTrustServiceType().trim()+dbCert.getTerritory().toUpperCase();
             if (tslMdMap.containsKey(dbCertID)) {
                 TslMetaData tslMD = tslMdMap.get(dbCertID);
                 TrustServiceProvider tsp = tspMap.get(dbCertID);

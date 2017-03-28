@@ -26,6 +26,8 @@ import se.tillvaxtverket.tsltrust.weblogic.db.TslCertDbSqlite;
 import se.tillvaxtverket.tsltrust.weblogic.models.TslTrustModel;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
@@ -40,25 +42,32 @@ import se.tillvaxtverket.tsltrust.weblogic.utils.TslCache;
 public class TslCacheDaemon implements WebXmlConstants {
 
     private static final Logger LOG = Logger.getLogger(TslCacheDaemon.class.getName());
-    private LogDbUtil logDb;
+    private final LogDbUtil logDb;
     private List<TslCertificates> newCertList;
     private List<TslCertificates> changedCertList;
-    private File recacheFile;
-    private TslTrustModel model;
+    private final File recacheFile;
+    private final TslTrustModel model;
     private TslCertDb certDb;
     private List<TslMetaData> tslList = null;
-    private TSLFactory tslFact = new TSLFactory();
-    private TslCache tslCache;
+    private final TSLFactory tslFact = new TSLFactory();
+    private final TslCache tslCache;
+    private boolean taskComplete;
+    private final long threadSleep;
+    private static final SimpleDateFormat tFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     /**
      * Constructs a TSL Cache daemon object
+     * @param taskComplete
+     * @param threadSleep 
      */
-    public TslCacheDaemon() {
+    public TslCacheDaemon(boolean taskComplete, long threadSleep) {
         this.model = ContextParameters.getModel();
         this.certDb = model.getTslCertDb();
         this.logDb = model.getLogDb();
         recacheFile = new File(model.getDataLocation() + "cfg/recacheTime");
         tslCache = new TslCache(model);
+        this.taskComplete = taskComplete;
+        this.threadSleep = threadSleep;
     }
 
     private void con(String description) {
@@ -71,6 +80,7 @@ public class TslCacheDaemon implements WebXmlConstants {
 
     public void run() {
         con("Trust Service List recache operations");
+        long startTime = System.currentTimeMillis();
 
         getTslData();
         logDb.deleteExcessEventRecords();
@@ -83,7 +93,8 @@ public class TslCacheDaemon implements WebXmlConstants {
             }
         }
         FileOps.saveTxtFile(recacheFile, String.valueOf(System.currentTimeMillis()));
-
+        long elapsed = System.currentTimeMillis() - startTime;
+        con("Next TSL recache scheduled at " + tFormat.format(new Date(System.currentTimeMillis() + (threadSleep - elapsed))));
     }
 
     private void getTslData() {
@@ -100,6 +111,7 @@ public class TslCacheDaemon implements WebXmlConstants {
         }
 
         //Recache Tsls from lotl (never returns null - at minimum an empty list)
+        taskComplete = true;
         con("Downloading national TSLs...");
         tslCache.recacheTsl();
         tslList = tslCache.getCachedTslList();
@@ -109,6 +121,7 @@ public class TslCacheDaemon implements WebXmlConstants {
         }
 
         //Update trust service certificate database
+        taskComplete = false;
         con("Updating TSL database records...");
         int deletedRecords = certDb.deleteAbsentStatusRecords(tslList, logDb);
         if (deletedRecords > 0) {
@@ -131,7 +144,9 @@ public class TslCacheDaemon implements WebXmlConstants {
         }
 
 
+
         con("TSL recache complete");
+        taskComplete = true;
     }
 
     private boolean checkForUpdates() {
@@ -150,9 +165,10 @@ public class TslCacheDaemon implements WebXmlConstants {
             return update;
         } else {
             LOG.warning("SQLite DB Error. Could not retrieve TSL Certificates. Db update aborted");
-            con("DB Error","DB Connection failure. Aborting update.");
+            con("DB Error", "DB Connection failure. Aborting update.");
             return false;
         }
+
     }
 
     private void updateDatabase() {
