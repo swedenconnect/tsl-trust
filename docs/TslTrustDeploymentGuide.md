@@ -706,7 +706,7 @@ LotlURL | The URL location of the EU root TSL (Trust Service status List), also 
 SuperAdminID | The value of the identifying attribute of the super administrator user.
 SuperAdminAttribute | The attribute type of the identifying attribute value of the super administrator. If authentication method is Shibboleth SAML, then this refers to the mapped name of the attribute in the SAML implementation that provides identity information to TSL Trust using an AJP connector (i.e. the name of the attribute given to the TSL Trust administration service). If authentication method is one of Basic, Digest or Client Cert authentication set below, then this parameter should be set to the value "**User ID**".
 SuperAdminIdP | This parameter decides the identity source required for authenticating the preconfigured super admin. If Authentication mode is using Shibboleth SAML, then this parameter holds the entityId of the Identity Provider (IdP) that is trusted to identify the super administrator user. Otherwise, this parameter holds the identifier for the selected authentication method with one of the following values <br><br>**Basic Authentication** - For basic HTTP auth<br>**Client Cert Authentication** - For client certificate auth<br>**Digest Authentication** - For HTTP digest auth
-DiscoFeedUrl | The URL (including any necessary query string) for obtaining JSON/JSONP discovery data for the SAML federation within which this service acts as a Service Provider (SP). This parameter is optional. The identified source must provide JSON according to a proprietary format used in the Swedish eID framework.
+DiscoFeedUrl | The URL (including any necessary query string) for obtaining JSON/JSONP discovery data for the SAML federation within which this service acts as a Service Provider (SP). This parameter is optional. The identified source must provide JSON according to a proprietary format used in the Swedish eID framework. (See https://eid.svelegtest.se/disco/json?action=idplist for a sample JSON feed according to the expected format).
 MaxConsoleLogSize | The maximum number of records that are kept in the console log. Records in excess of this size limit are automatically deleted from the log. Increasing this size limit provides longer page reload times in the log view of the administration service.
 MaxMajorLogAge | Number of days that records are kept in the major event log.
 TSLrecacheTime | Number of hours between TSL reaches, certificate revocation and issuance of certificates for new compliant services. Times less than one hour can be specified
@@ -752,7 +752,7 @@ DbVerboseLogging | A value set to true generates verbose logging of database eve
       "SuperAdminID": "1234567890",
       "SuperAdminAttribute": "User ID",
       "SuperAdminIdP": "Digest Authentication",
-      "DiscoFeedUrl": "https://eid.svelegtest.se/disco/json?action\u003didplist"
+      "DiscoFeedUrl": ""
     }
 
 
