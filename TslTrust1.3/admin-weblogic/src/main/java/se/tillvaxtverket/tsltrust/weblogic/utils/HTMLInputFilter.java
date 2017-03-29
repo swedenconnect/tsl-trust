@@ -1,24 +1,18 @@
 /*
- * This code is licensed under a Creative Commons Attribution-ShareAlike 2.5 License
- * http://creativecommons.org/licenses/by-sa/2.5/
+ * Copyright 2017 Swedish E-identification Board (E-legitimationsnämnden)
+ *  		 
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
  * 
- * This code is a Java port of the original work in PHP by Cal Hendersen.
- * http://code.iamcal.com/php/lib_filter/
- *
- * The trickiest part of the translation was handling the differences in regex handling
- * between PHP and Java.  These resources were helpful in the process:
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
  * 
- * http://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/Pattern.html
- * http://us2.php.net/manual/en/reference.pcre.pattern.modifiers.php
- * http://www.regular-expressions.info/modifiers.html
- * 
- * A note on naming conventions: instance variables are prefixed with a "v"; global
- * constants are in all caps.
- * 
- * This implementationi is a modification of the original code. The original code
- * may be obtained from:
- * 
- * http://josephoconnell.com/java/xss-html-filter/
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package se.tillvaxtverket.tsltrust.weblogic.utils;
 
