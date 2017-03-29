@@ -704,10 +704,9 @@ Parameter|Value
 Mode | This parameter must be set to “production” for proper operation of the service. All other values are reserved for test purposes
 LotlURL | The URL location of the EU root TSL (Trust Service status List), also known as the LotL (List of the Lists). This is the root source of all TSL information that is imported into TSL Trust. Other national TSLs that are imported are located using references found in the LotL.
 SuperAdminID | The value of the identifying attribute of the super administrator user.
-SuperAdminAttribute | The attribute type of the identifying attribute value of the super administrator. This refers to the mapped name of the attribute in the SAML implementation that provides identity information to TSL Trust using an AJP connector (i.e. the name of the attribute given to the TSL Trust administration service).
-SuperAdminIdP | The SAML entityId of the Identity Provider (IdP) that is trusted to identify the super administrator user.
-DiscoFeedUrl | The URL (including any necessary query string) for obtaining JSON/JSONP discovery data for the SAML federation within which this service acts as a Service Provider (SP).
-DataLocation | The location of the directory where data related to this service is stored. Location is specified using forward slash character between directories (also for Windows systems) e.g. **C:/dir/subDir/**. This parameter must end with a “/” character to signal that it specifies a directory and not a file.
+SuperAdminAttribute | The attribute type of the identifying attribute value of the super administrator. If authentication method is Shibboleth SAML, then this refers to the mapped name of the attribute in the SAML implementation that provides identity information to TSL Trust using an AJP connector (i.e. the name of the attribute given to the TSL Trust administration service). If authentication method is one of Basic, Digest or Client Cert authentication set below, then this parameter should be set to the value "**User ID**".
+SuperAdminIdP | This parameter decides the identity source required for authenticating the preconfigured super admin. If Authentication mode is using Shibboleth SAML, then this parameter holds the entityId of the Identity Provider (IdP) that is trusted to identify the super administrator user. Otherwise, this parameter holds the identifier for the selected authentication method with one of the following values <br><br>**Basic Authentication** - For basic HTTP auth<br>**Client Cert Authentication** - For client certificate auth<br>**Digest Authentication** - For HTTP digest auth
+DiscoFeedUrl | The URL (including any necessary query string) for obtaining JSON/JSONP discovery data for the SAML federation within which this service acts as a Service Provider (SP). This parameter is optional. The identified source must provide JSON according to a proprietary format used in the Swedish eID framework.
 MaxConsoleLogSize | The maximum number of records that are kept in the console log. Records in excess of this size limit are automatically deleted from the log. Increasing this size limit provides longer page reload times in the log view of the administration service.
 MaxMajorLogAge | Number of days that records are kept in the major event log.
 TSLrecacheTime | Number of hours between TSL reaches, certificate revocation and issuance of certificates for new compliant services. Times less than one hour can be specified
@@ -751,8 +750,8 @@ DbVerboseLogging | A value set to true generates verbose logging of database eve
       "DbAutoCreateTables": "true",
       "DbVerboseLogging": "false",
       "SuperAdminID": "1234567890",
-      "SuperAdminAttribute": "personalIdentityNumber",
-      "SuperAdminIdP": "https://idp.svelegtest.se/idp",
+      "SuperAdminAttribute": "User ID",
+      "SuperAdminIdP": "Digest Authentication",
       "DiscoFeedUrl": "https://eid.svelegtest.se/disco/json?action\u003didplist"
     }
 
