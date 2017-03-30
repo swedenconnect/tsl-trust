@@ -133,48 +133,30 @@ following logical order:
 3.  Create and configure any external databases that are used by the
     policy administration service for storing policies and logs.
 
-4.  Deploy the policy administration web application (but don’t start it
-    yet), **Note:** As an alternative to the configuration tasks in step
-    6 below, you can set appropriate configuration parameters in the
-    source code project (web.xml file of the TT Admin Webservice module)
-    and rebuild the .war before deployment.
+4.  Make sure that the web.xml file data folder location is pointing to an appropriate location. Then deploy and start the policy administration web application. **Note:** Default files will be generated at the specified location. Once this is done, stop the application and edit configuration files before starting the application again.
 
-5.  Place the policy administration maintenance application .jar in a
-    dedicated directory on the administration server.
+5.  Start the policy administration web application with correct configuration parameter values.
 
-6.  Run the maintenance application. Locate and configure the web.xml
-    file of the policy administration web application. This is necessary
-    to configure, storage locations, database connections and other
-    essential parameters before the service is started.
+6.  Log on to the administration service using the super user account
+    settings configured in step 4. Steps 7- 9 below are optional.
 
-7.  Start the policy administration web application.
-
-8.  Log on to the administration service using the super user account
-    settings configured in step 6 (or directly in the web.xml deployment
-    descriptor of the admin service web application).
-
-9.  Obtain an administration privileges request password in the
+7.  Obtain an administration privileges request password in the
     authorization menu and send it to administrators that needs access
     (if applicable)
 
-10. Allow administrators to log in to the service and apply for
+8. Allow administrators to log in to the service and apply for
     administration rights.
 
-11. As super administrator, grant administrators necessary rights to
+9. As super administrator, grant administrators necessary rights to
     administrate policies.
 
-12. Allow a policy administrator to define at least one signature
-    validation policy. (If this is done by the Super Admin, then steps
-    10-12 can be omitted)
+10. Allow a policy administrator to define at least one signature
+    validation policy.
 
-13. Stop and restart the policy administration service (or wait for the
+11. Restart the policy administration service (or wait for the
     next server update) to generate and publish trust information.
 
-14. Open a signature validation test console in the maintenance
-    application and verify that signatures can be validated as expected
-    using a defined policy.
-
-15. Configure and deploy any number of publically facing signature
+12. Configure and deploy any number of publically facing signature
     validation services, using the deployed administration service as
     the source of trust information.
 
