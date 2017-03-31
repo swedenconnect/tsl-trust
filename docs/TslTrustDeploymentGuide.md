@@ -71,11 +71,6 @@ servers and locations.
 2.  The sample TSL Trust signature validation service
     (TTSigvalService.war).
 
-In addition to this, an optional Admin Maintenance application (Java
-Swing application) is provided to provide convenient functions for
-configuration, monitoring and testing the administration service. This
-application is not needed in order to run the service.
-
 The signature validation service is deployed and run as a single .war
 that can run in a standard servlet container such as Apache Tomcat.
 
