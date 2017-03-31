@@ -71,6 +71,8 @@ servers and locations.
 2.  The sample TSL Trust signature validation service
     (TTSigvalService.war).
 
+<img src="img/architecture.png"></img>
+
 The signature validation service is deployed and run as a single .war
 that can run in a standard servlet container such as Apache Tomcat.
 
