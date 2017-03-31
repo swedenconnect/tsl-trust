@@ -253,33 +253,8 @@ The SQLite JDBC driver library can be obtained from:
 
 > https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
 
-Libraries that are loaded by Tomcat separately must be excluded from the
-POM of the TT Common project, but must be present in the POM of the TT
-Maintenance project (as it is run as a swing application and dot
-deployed in Tomcat).
+**Note** The SQLite JDBC driver is manually added to the class path of Tomcat rather than built into the war file as a workaround. This stoped some problems experienced when the library was build into the war file. The cause of these problems are unclear and they may no longer exist as updates in Tomcat and the JRE may have solved this issue long time ago. Version 1.4 will aim to fix this issue.
 
-This is the default POM configuration for both projects.
-
-To exclude the library from the build, add the scope “provided” to the
-dependency in the TT Common POM. Eg in the POM of TT Common:
-
-    <dependency>
-        <groupId>org.xerial</groupId>
-        <artifactId>sqlite-jdbc</artifactId>
-        <scope>provided</scope>
-    </dependency>
-
-Note that the version element is provided in the main project POM
-(dependency management settings) and therefore not provided here.
-
-The corresponding dependency for the TT Maintenance project (where the
-library .jar must be included) is the same as above but excluding the
-scope element, that is:
-
-    <dependency>
-        <groupId>org.xerial</groupId>
-        <artifactId>sqlite-jdbc</artifactId>
-    </dependency>
 
 <a name="tsl-trust-administration-service"></a>
 ### 2.2. TSL Trust administration service
