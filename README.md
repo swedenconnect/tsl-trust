@@ -18,4 +18,4 @@ A scaled down version of this application, showing the popular browsing tool of 
 
 A deployment guide is provided in the doc folder.
 
-> [Deployment Guide](https://github.com/elegnamnden/tsl-trust/blob/dev/docs/TslTrustDeploymentGuide.md)
+> [Deployment Guide](https://github.com/elegnamnden/tsl-trust/blob/master/docs/TslTrustDeploymentGuide.md)
