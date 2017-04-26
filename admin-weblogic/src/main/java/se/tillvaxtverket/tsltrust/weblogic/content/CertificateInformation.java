@@ -280,18 +280,14 @@ public class CertificateInformation implements HtmlConstants, TTConstants {
         section.addNewElement(cert.toHtml(false));
     }
 
-    private void addPemInfo(X509Certificate cert, boolean unfold) {
+    private void addPemInfo(AaaCertificate cert, boolean unfold) {
         InfoTableSection section = certElements.addNewSection(tm, "PEM encoded", unfold);
         section.setSectionHeadingClasses(CERT_INFO);
         section.setFoldedElement("Base64 encoded certificate");
 
         String pemCert = "Encode error";
-        try {
-            pemCert = PEM.getPemCert(cert.getEncoded(), "<br />");
-            section.addNewElement(aStr(pemCert), aStr(CODE_TEXT));
-        } catch (CertificateEncodingException ex) {
-            Logger.getLogger(CertificateInformation.class.getName()).log(Level.WARNING, null, ex);
-        }
+        pemCert = PEM.getPemCert(cert.getEncoded(), "<br />");
+        section.addNewElement(aStr(pemCert), aStr(CODE_TEXT));
     }
 
     private void addASN1Inspector(AaaCertificate cert) {

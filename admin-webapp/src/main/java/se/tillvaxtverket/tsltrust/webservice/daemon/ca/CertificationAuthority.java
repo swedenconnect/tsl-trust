@@ -195,6 +195,7 @@ public class CertificationAuthority implements CaKeyStoreConstants {
                     CertificatePolicies cpe = getAnyCertificatePolicies();
                     ext.setExtDataASN1(cpe.toASN1Primitive());
                     ext.setExtData(cpe.getEncoded());
+                    policy=true;
                 }
                 
                 switch (ext.getExtensionType()){
@@ -219,7 +220,7 @@ public class CertificationAuthority implements CaKeyStoreConstants {
             }
         } else {
             extList.add(new Extension(Extension.basicConstraints, false, new BasicConstraints(true).getEncoded("DER")));
-            policy = true;
+            policy = false;
         }
         // If no policy in orgCert then add AnyPolicy to list
         if (!policy) {
@@ -258,9 +259,10 @@ public class CertificationAuthority implements CaKeyStoreConstants {
         // create a new certificate
         try {
             CertRequestModel reqModel = new CertRequestModel();
-            reqModel.setIssuer(issuerCert);
+            reqModel.setIssuerDN(issuerCert.getSubject());
             reqModel.setPublicKey(orgCert.getCert().getPublicKey());
             reqModel.setSerialNumber(certSerial);
+            reqModel.setSubjectDN(orgCert.getSubject());
             reqModel.setNotBefore(orgCert.getNotBefore());
             if (issuerCert.getNotAfter().after(orgCert.getNotAfter())) {
                 reqModel.setNotAfter(orgCert.getNotAfter());
@@ -273,7 +275,7 @@ public class CertificationAuthority implements CaKeyStoreConstants {
             AuthorityKeyIdentifier aki = extUtil.createAuthorityKeyIdentifier(issuerCert);
             extensions.add(new Extension(Extension.authorityKeyIdentifier, false, aki.getEncoded("DER")));
             
-            DistributionPoint dp = new DistributionPoint(new DistributionPointName(new GeneralNames(new GeneralName(4, crlDpUrl))), null, null);
+            DistributionPoint dp = new DistributionPoint(new DistributionPointName(new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, crlDpUrl))), null, null);
             CRLDistPoint cdp = new CRLDistPoint(new DistributionPoint[]{dp});
             extensions.add(new Extension(Extension.cRLDistributionPoints, false, cdp.getEncoded("DER")));
                         

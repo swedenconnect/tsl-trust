@@ -11,6 +11,7 @@
         <script type="text/javascript" src="script/jquery_base64.js"></script>
         <script type="text/javascript" charset="UTF-8" src="script/javascript.js"></script>
         <link rel="stylesheet" type="text/css" href="script/stylesheet_EU.css">
+        <link rel="stylesheet" type="text/css" href="script/certDisp.css">
 
     </head>
     <body>
