@@ -42,8 +42,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.tsp.TimeStampToken;
 import org.bouncycastle.util.CollectionStore;
+import se.tillvaxtverket.tsltrust.common.iaik.KsCertFactory;
 import se.tillvaxtverket.tsltrust.common.utils.core.FnvHash;
-import se.tillvaxtverket.tsltrust.common.utils.general.KsCertFactory;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.sigVerify.context.SignatureValidationContext;
 
 /**

@@ -16,6 +16,7 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.content;
 
+import com.aaasec.lib.aaacert.AaaCertificate;
 import se.tillvaxtverket.tsltrust.common.html.elements.HtmlElement;
 import se.tillvaxtverket.tsltrust.common.utils.core.FnvHash;
 import se.tillvaxtverket.tsltrust.common.utils.general.CertificateUtils;
@@ -36,7 +37,6 @@ import se.tillvaxtverket.tsltrust.weblogic.utils.ASN1Util;
 import se.tillvaxtverket.tsltrust.weblogic.utils.ExtractorUtil;
 import se.tillvaxtverket.tsltrust.weblogic.utils.HtmlUtil;
 import se.tillvaxtverket.tsltrust.weblogic.utils.PolicyUtils;
-import iaik.x509.X509Certificate;
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -65,7 +65,7 @@ public class CertManagementInfoElements implements HtmlConstants, TTConstants {
     private CertificateInformation certInfo;
     private Map<BigInteger, List<TslCertificates>> tslCertMap;
     private Map<BigInteger, DbCert> issuedCertsMap;
-    private Map<BigInteger, X509Certificate> externalCertMap;
+    private Map<BigInteger, AaaCertificate> externalCertMap;
     private Map<String, Map<String, List<BigInteger>>> listedCertifiedMap, listedPendingMap, listedRevMap;
     private List<BigInteger> unlistedIssuedCerts, unlistedPendingRev, unlistedPendingCert;
     private Map<String, Integer> issuedItems, pendingItems, revItems;
@@ -94,7 +94,7 @@ public class CertManagementInfoElements implements HtmlConstants, TTConstants {
         unlistedPendingCert = new ArrayList<BigInteger>();
         unlistedPendingRev = new ArrayList<BigInteger>();
         unlistedIssuedCerts = new ArrayList<BigInteger>();
-        externalCertMap = new HashMap<BigInteger, X509Certificate>();
+        externalCertMap = new HashMap<BigInteger, AaaCertificate>();
 
         //Init item counts;
         issuedItems = new HashMap<String, Integer>();
@@ -199,7 +199,7 @@ public class CertManagementInfoElements implements HtmlConstants, TTConstants {
                     // Get the associated TslCertificates objeccts (Some certs may be associated with multiple services
                     try {
                         List<TslCertificates> tcList = tslCertMap.get(certId);
-                        X509Certificate cert = getCert(tcList.get(0));
+                        AaaCertificate cert = getCert(tcList.get(0));
                         String name = ASN1Util.getShortCertName(getCert(tcList.get(0)));
                         InfoTableElements certElm = getSection(tm, tspElm, name, false).getElements();
                         InfoTableSection infoSect = certElm.addNewSection(tm, "Service Info", false);
@@ -229,7 +229,7 @@ public class CertManagementInfoElements implements HtmlConstants, TTConstants {
         for (BigInteger certId : certIds) {
             if (externalCertMap.containsKey(certId)) {
                 try {
-                    X509Certificate cert = externalCertMap.get(certId);
+                    AaaCertificate cert = externalCertMap.get(certId);
                     String name = ASN1Util.getShortCertName(cert);
                     InfoTableElements extCertElm = getSection(tm, elements, name, false).getElements();
                     InfoTableSection tslCertSect = extCertElm.addNewSection(tm, "TSL Cert", false);
@@ -345,7 +345,7 @@ public class CertManagementInfoElements implements HtmlConstants, TTConstants {
             List<BigInteger> complExtCertList = new LinkedList<BigInteger>();
             List<String> addCertIds = valPolicy.getAddCertIds();
             for (String certHash : valPolicy.getAddCertIds()) {
-                X509Certificate cert = policyUtils.getIAIKCert(certHash);
+                AaaCertificate cert = policyUtils.getIAIKCert(certHash);
                 BigInteger certId =null;
                 if (cert != null) {
                     certId = key(cert);
@@ -421,7 +421,7 @@ public class CertManagementInfoElements implements HtmlConstants, TTConstants {
         return validCerts;
     }
 
-    private boolean isExpired(X509Certificate cert) {
+    private boolean isExpired(AaaCertificate cert) {
         return cert.getNotAfter().before(new Date());
     }
 
@@ -429,7 +429,7 @@ public class CertManagementInfoElements implements HtmlConstants, TTConstants {
         return FnvHash.getFNV1a(data);
     }
 
-    private BigInteger key(X509Certificate cert) {
+    private BigInteger key(AaaCertificate cert) {
         return key(cert.getPublicKey().getEncoded());
     }
 
@@ -531,7 +531,7 @@ public class CertManagementInfoElements implements HtmlConstants, TTConstants {
      * @param tc the TSL trust service database record
      * @return X509 Certificate
      */
-    public X509Certificate getCert(TslCertificates tc) {
+    public AaaCertificate getCert(TslCertificates tc) {
         try {
             return CertificateUtils.getCertificate(tc.getTslCertificate());
         } catch (Exception ex) {
@@ -546,7 +546,7 @@ public class CertManagementInfoElements implements HtmlConstants, TTConstants {
      * @param refCertId a 64 bit FNV-1a hash of the target certificate
      * @return X509 Certificate identified by the refCertId
      */
-    public X509Certificate getCert(String refCertId) {
+    public AaaCertificate getCert(String refCertId) {
         BigInteger certId = null;
         int type = 0;
         try {

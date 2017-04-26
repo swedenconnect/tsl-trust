@@ -70,12 +70,12 @@
         </pluginManagement>
     </build>
     <dependencies>
-        <dependency>
+<!--        <dependency>
             <groupId>at.iaik.jce</groupId>
             <artifactId>iaik-jce-full</artifactId>
             <version>4.0</version>
             <scope>provided</scope>
-        </dependency>
+        </dependency>-->
     </dependencies>
     <dependencyManagement>
         <dependencies>

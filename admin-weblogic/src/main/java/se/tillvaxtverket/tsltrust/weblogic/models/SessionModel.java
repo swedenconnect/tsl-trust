@@ -16,10 +16,10 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.models;
 
+import com.aaasec.lib.aaacert.AaaCertificate;
 import se.tillvaxtverket.tsltrust.common.utils.core.Base64Coder;
 import se.tillvaxtverket.tsltrust.common.utils.core.FnvHash;
 import se.tillvaxtverket.tsltrust.weblogic.data.AdminUser;
-import iaik.x509.X509Certificate;
 import java.math.BigInteger;
 import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
@@ -129,14 +129,10 @@ public class SessionModel {
         return defaultState;
     }
 
-    public void addPemCert(X509Certificate cert) {
-        try {
-            String pem = new String(Base64Coder.encode(cert.getEncoded()));
-            String certHash = FnvHash.getFNV1aToHex(cert.getEncoded());
-            pemCertMap.put(certHash, pem);
-        } catch (CertificateEncodingException ex) {
-            LOG.warning(ex.getMessage());
-        }
+    public void addPemCert(AaaCertificate cert) {
+        String pem = new String(Base64Coder.encode(cert.getEncoded()));
+        String certHash = FnvHash.getFNV1aToHex(cert.getEncoded());
+        pemCertMap.put(certHash, pem);
     }
 
     public String getPemCert(String certId) {

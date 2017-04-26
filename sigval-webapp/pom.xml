@@ -42,7 +42,12 @@
             <artifactId>commons-fileupload</artifactId>
             <version>1.2.2</version>
         </dependency>
-        <!--        <dependency>
+        <dependency>
+            <groupId>at.iaik.jce</groupId>
+            <artifactId>iaik-jce-full</artifactId>
+            <version>4.0</version>
+            <scope>provided</scope>
+        </dependency>        <!--        <dependency>
             <groupId>org.swinglabs</groupId>
             <artifactId>swing-layout</artifactId>
         </dependency>-->

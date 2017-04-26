@@ -32,7 +32,6 @@ import java.security.KeyStoreException;
 import java.security.cert.CertificateException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import se.tillvaxtverket.tsltrust.common.utils.general.KsCertFactory;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.models.SigValidationModel;
 import iaik.x509.X509Certificate;
 import iaik.x509.extensions.AuthorityInfoAccess;
@@ -46,6 +45,7 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import org.bouncycastle.cert.X509CertificateHolder;
+import se.tillvaxtverket.tsltrust.common.iaik.KsCertFactory;
 
 /**
  * This class provides functions for verifying a certificate chain to a trusted

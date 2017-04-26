@@ -16,7 +16,7 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.data;
 
-import iaik.x509.X509Certificate;
+import com.aaasec.lib.aaacert.AaaCertificate;
 import java.io.Serializable;
 import java.security.cert.CertificateEncodingException;
 import se.tillvaxtverket.tsltrust.common.utils.core.CorePEM;
@@ -28,7 +28,7 @@ import se.tillvaxtverket.tsltrust.common.utils.general.CertificateUtils;
 public class ExternalCert implements Serializable{
     public String certificateId="";
     public String b64Cert;
-    X509Certificate cert=null;
+    AaaCertificate cert=null;
 
     public ExternalCert() {
     }
@@ -41,11 +41,8 @@ public class ExternalCert implements Serializable{
     public boolean setB64Cert (String pemCert){
         this.cert = CertificateUtils.getCertificate(pemCert);
         b64Cert="";
-        try {
-            String trimPemCert = CorePEM.trimPemCert(CorePEM.getPemCert(cert.getEncoded()));
-            b64Cert=trimPemCert;
-        } catch (CertificateEncodingException ex) {
-        }
+        String trimPemCert = CorePEM.trimPemCert(CorePEM.getPemCert(cert.getEncoded()));
+        b64Cert=trimPemCert;
 
         if (cert!=null){
             return true;
@@ -54,18 +51,15 @@ public class ExternalCert implements Serializable{
     }
 
     // default getters and setters
-    public X509Certificate getCert() {
+    public AaaCertificate getCert() {
         return cert;
     }
 
-    public void setCert(X509Certificate cert) {
+    public void setCert(AaaCertificate cert) {
         this.cert = cert;
         b64Cert="";
-        try {
-            String trimPemCert = CorePEM.trimPemCert(CorePEM.getPemCert(cert.getEncoded()));
-            b64Cert=trimPemCert;
-        } catch (CertificateEncodingException ex) {
-        }
+        String trimPemCert = CorePEM.trimPemCert(CorePEM.getPemCert(cert.getEncoded()));
+        b64Cert=trimPemCert;
     }
 
     public String getCertificateId() {

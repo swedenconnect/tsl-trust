@@ -18,11 +18,9 @@ package se.tillvaxtverket.tsltrust.webservice;
 
 import se.tillvaxtverket.tsltrust.webservice.utility.RequestModelFactory;
 import com.google.gson.Gson;
-import iaik.x509.extensions.qualified.structures.QCStatement;
 import se.tillvaxtverket.tsltrust.weblogic.models.RequestModel;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.Provider;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -38,8 +36,7 @@ import se.tillvaxtverket.tsltrust.weblogic.models.TslTrustModel;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
-import se.tillvaxtverket.tsltrust.common.iaik.AuthContextQCStatement;
-import se.tillvaxtverket.tsltrust.common.iaik.PdsQCStatement;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import se.tillvaxtverket.tsltrust.weblogic.MainMenuProvider;
 import se.tillvaxtverket.tsltrust.weblogic.MainTslTrust;
 import se.tillvaxtverket.tsltrust.weblogic.models.TslTrustConfig;
@@ -69,8 +66,7 @@ public class HtmlProvider extends HttpServlet {
     @Override
     public void init(ServletConfig config) throws ServletException {
         //        this.context = config.getServletContext();
-        Provider[] providers = Security.getProviders();
-        Security.insertProviderAt(new iaik.security.provider.IAIK(), providers.length);
+        Security.addProvider(new BouncyCastleProvider());
 
         sessionMap = new HashMap<BigInteger, SessionModel>();
         day = 1000 * 60 * 60 * 24;
@@ -85,9 +81,6 @@ public class HtmlProvider extends HttpServlet {
         
         tslTrust = new MainTslTrust(model);
         menuProvider = new MainMenuProvider(model);
-        //Register private QCStatements
-        QCStatement.register(PdsQCStatement.statementID, PdsQCStatement.class);
-        QCStatement.register(AuthContextQCStatement.statementID, AuthContextQCStatement.class);
 
     }
 
@@ -159,23 +152,6 @@ public class HtmlProvider extends HttpServlet {
         String htmlResponse = tslTrust.loadData(req);
         response.getWriter().write(htmlResponse);
 
-
-//        response.setContentType("text/html;charset=UTF-8");
-//        PrintWriter out = response.getWriter();
-//        try {
-//            /* TODO output your page here
-//            out.println("<html>");
-//            out.println("<head>");
-//            out.println("<title>Servlet HtmlProvider</title>");  
-//            out.println("</head>");
-//            out.println("<body>");
-//            out.println("<h1>Servlet HtmlProvider at " + request.getContextPath () + "</h1>");
-//            out.println("</body>");
-//            out.println("</html>");
-//             */
-//        } finally {
-//            out.close();
-//        }
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

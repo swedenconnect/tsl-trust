@@ -16,6 +16,7 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.content;
 
+import com.aaasec.lib.aaacert.AaaCertificate;
 import se.tillvaxtverket.tsltrust.weblogic.content.ts.TrustServiceInformation;
 import se.tillvaxtverket.tsltrust.weblogic.data.TslMetaData;
 import se.tillvaxtverket.tsltrust.weblogic.data.TslCertificates;
@@ -26,7 +27,6 @@ import se.tillvaxtverket.tsltrust.weblogic.models.InfoTableElement;
 import se.tillvaxtverket.tsltrust.weblogic.models.InfoTableElements;
 import se.tillvaxtverket.tsltrust.weblogic.models.InfoTableModel;
 import se.tillvaxtverket.tsltrust.weblogic.models.InfoTableSection;
-import iaik.x509.X509Certificate;
 import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
@@ -61,7 +61,6 @@ import se.tillvaxtverket.tsltrust.common.utils.core.FnvHash;
 import se.tillvaxtverket.tsltrust.common.utils.general.CertificateUtils;
 import se.tillvaxtverket.tsltrust.common.utils.general.EuropeCountry;
 import se.tillvaxtverket.tsltrust.common.utils.general.FileOps;
-import se.tillvaxtverket.tsltrust.common.utils.general.KsCertFactory;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.HashMap;
@@ -100,7 +99,7 @@ public class TslExtractorWeb implements HtmlConstants, TTConstants {
     TslCertDb dbUtil;
     TslTrustModel model;
     TslLoader tslLoader;
-    Map<String, iaik.x509.X509Certificate> otpCertMap;
+    Map<String, AaaCertificate> otpCertMap;
     Thread tslReloadThread;
     Thread tslRecacheThread;
     TSLFactory tslFact = new TSLFactory();
@@ -584,7 +583,7 @@ public class TslExtractorWeb implements HtmlConstants, TTConstants {
     private void addOtherTslPointerInformation(InfoTableElements infoElements,
             TrustServiceList tsl, InfoTableModel tm, InfoTableUtils itUtil) {
 
-        otpCertMap = new HashMap<String, iaik.x509.X509Certificate>();
+        otpCertMap = new HashMap<String, AaaCertificate>();
         InfoTableSection otpSect = infoElements.addNewSection(tm, true);
         otpSect.setFoldedElement("Other TSL Pointers", tm.getSectionHeadingClass()[0]);
         otpSect.setKeepFoldableElement(true);
@@ -593,13 +592,10 @@ public class TslExtractorWeb implements HtmlConstants, TTConstants {
         List<OtherTSLPointerData> otpList = tsl.getOtherTSLPointers();
         for (OtherTSLPointerData otp : otpList) {
             //Get certificate
-            List<iaik.x509.X509Certificate> certs = otp.getOtpCertificates();
-            for (iaik.x509.X509Certificate cert : certs) {
-                try {
-                    String certHash = FnvHash.getFNV1aToHex(cert.getEncoded());
-                    otpCertMap.put(certHash, cert);
-                } catch (CertificateEncodingException ex) {
-                }
+            List<AaaCertificate> certs = otp.getOtpCertificates();
+            for (AaaCertificate cert : certs) {
+                String certHash = FnvHash.getFNV1aToHex(cert.getEncoded());
+                otpCertMap.put(certHash, cert);
             }
 
             // Get URL;
@@ -695,10 +691,7 @@ public class TslExtractorWeb implements HtmlConstants, TTConstants {
         List<TslCertificates> dbCertList = dbUtil.getAllTslCertificate(false);
         if (otpCertMap != null) {
             if (otpCertMap.containsKey(certHash)) {
-                try {
-                    return new String(Base64Coder.encode(otpCertMap.get(certHash).getEncoded()));
-                } catch (CertificateEncodingException ex) {
-                }
+                return new String(Base64Coder.encode(otpCertMap.get(certHash).getEncoded()));
             }
         }
         for (TslCertificates tc : dbCertList) {
@@ -777,7 +770,7 @@ public class TslExtractorWeb implements HtmlConstants, TTConstants {
             String tslSigCertExpiry = "";
             String tslVersion = getTslVersion(tsl.getTslData());
             try {
-                X509Certificate usedTslSigCert = KsCertFactory.getIaikCert(tm.getUsedTslSigCert());
+                AaaCertificate usedTslSigCert = new AaaCertificate(tm.getUsedTslSigCert().getEncoded());
                 Date certExpiry = usedTslSigCert.getNotAfter();
                 tslSigCertExpiry = DATE_FORMAT.format(certExpiry);
                 if (certExpiry.before(new Date())) {

@@ -16,72 +16,61 @@
  */
 package se.tillvaxtverket.tsltrust.common.utils.general;
 
-import iaik.x509.X509Certificate;
+import com.aaasec.lib.aaacert.AaaCertificate;
+import com.aaasec.lib.aaacert.extension.ExtensionInfo;
+import com.aaasec.lib.aaacert.extension.QCStatementsExt;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.util.LinkedList;
 import java.util.List;
-import javax.security.auth.x500.X500Principal;
+import java.util.Map;
 import se.tillvaxtverket.tsltrust.common.utils.core.Base64Coder;
 import se.tillvaxtverket.tsltrust.common.utils.core.CorePEM;
-import iaik.x509.V3Extension;
-import iaik.x509.extensions.qualified.QCStatements;
-import iaik.x509.extensions.qualified.structures.QCStatement;
-import iaik.x509.extensions.qualified.structures.etsi.QcEuCompliance;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.logging.Logger;
+import javax.security.auth.x500.X500Principal;
+import org.bouncycastle.asn1.x509.Extension;
 
 /**
  * X509 Certificate handling utilities
  */
 public class CertificateUtils implements Constants {
+
     private static final Logger LOG = Logger.getLogger(CertificateUtils.class.getName());
 
-    public static X509Certificate getCertificate(String pemCert) {
+    public static AaaCertificate getCertificate(String pemCert) {
         if (pemCert == null) {
             return null;
         }
         return (getCertificate(Base64Coder.decodeLines(CorePEM.trimPemCert(pemCert))));
     }
 
-    public static X509Certificate getCertificate(byte[] certData) {
+    public static AaaCertificate getCertificate(byte[] certData) {
 
         try {
-            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509", "IAIK");
-            try {
-                X509Certificate certificate = (X509Certificate) certificateFactory.generateCertificate(new ByteArrayInputStream(
-                        certData));
-                return certificate;
-            } catch (CertificateException e) {
-                return null;
-                //throw new RuntimeException("X509 error: "+ e.getMessage(), e);
-            }
-        } catch (Exception ex) {
-            //LOG.info("Failed to parse Cert:"+String.valueOf(Base64Coder.encode(certData)));
+            return new AaaCertificate(certData);
+
+        } catch (Exception e) {
+            return null;
         }
-        return null;
+
     }
 
     public static short getSdiType(java.security.cert.X509Certificate javaCert) {
         try {
-            X509Certificate cert = getCertificate(javaCert.getEncoded());
+            AaaCertificate cert = getCertificate(javaCert.getEncoded());
             if (cert != null) {
                 return getSdiType(cert);
             }
-        } catch (CertificateEncodingException ex) {
+        } catch (Exception ex) {
         }
         return 4;
     }
 
-    public static short getSdiType(X509Certificate cert) {
+    public static short getSdiType(AaaCertificate cert) {
         boolean qualified = false;
         boolean rootCert = false;
         boolean eeCert = false;
@@ -97,44 +86,30 @@ public class CertificateUtils implements Constants {
         }
 
         // qc test
-        Enumeration<V3Extension> e = cert.listExtensions();
-        if (e != null) {
-
-            List<V3Extension> extList = new ArrayList<V3Extension>();
-            while (e.hasMoreElements()) {
-                extList.add(e.nextElement());
-            }
-
-            for (V3Extension rawExt : extList) {
-                //QcStatements
-                if (rawExt.getObjectID().equals(QCStatements.oid)) {
-                    QCStatements qc = (QCStatements) rawExt;
-                    // set property
-                    QCStatement[] qCStatements = qc.getQCStatements();
-                    for (QCStatement statement : qCStatements) {
-                        if (statement.getStatementID().equals(QcEuCompliance.statementID)) {
-                            qualified = true;
-                        }
-                    }
-                }
+        Map<String, ExtensionInfo> extensionsMap = cert.getExtensionsMap();
+        if (extensionsMap.containsKey(Extension.qCStatements.getId())) {
+            try {
+                QCStatementsExt qcStatements = QCStatementsExt.getInstance(extensionsMap.get(Extension.qCStatements.getId()).getExtDataASN1());
+                qualified = qcStatements.isQcCompliance();
+            } catch (Exception e) {
             }
         }
 
         // return result
         short type = 0;
-        if (!eeCert){
-            type=1;
+        if (!eeCert) {
+            type = 1;
         }
-        if (rootCert){
+        if (rootCert) {
             type = 2;
         }
-        if (qualified){
+        if (qualified) {
             type += 3;
         }
         return type;
     }
 
-    public static String getSki(X509Certificate cert) {
+    public static String getSki(AaaCertificate cert) {
 
         byte[] skiBytes = cert.getExtensionValue("2.5.29.14");
         if (null != skiBytes) {
@@ -164,12 +139,11 @@ public class CertificateUtils implements Constants {
 
     /**
      * Get distinguished name component from X500 distinguished name
-     * @param distinguishedName
-     * The X500Principal holding the distinguished name
-     * @param keyWord
-     * Keyword for the target name component (e.g. "CN" for the common name component)
-     * @return
-     * The target name compnent (null if name component was not present)
+     *
+     * @param distinguishedName The X500Principal holding the distinguished name
+     * @param keyWord Keyword for the target name component (e.g. "CN" for the
+     * common name component)
+     * @return The target name compnent (null if name component was not present)
      */
     public static String getNameComponent(X500Principal distinguishedName, String keyWord) {
 

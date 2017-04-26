@@ -16,7 +16,7 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.data;
 
-import iaik.x509.X509Certificate;
+import com.aaasec.lib.aaacert.AaaCertificate;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -33,21 +33,21 @@ public class TslMetaData {
     private URL url;
     private String urlString, signStatus = "";
     private File tslFile;
-    private List<X509Certificate> certList;
-    private X509Certificate usedTslSigCert = null;
+    private List<AaaCertificate> certList;
+    private AaaCertificate usedTslSigCert = null;
     private EuropeCountry country;
 
-    public TslMetaData(String urlString, List<X509Certificate> certList, EuropeCountry country) {
+    public TslMetaData(String urlString, List<AaaCertificate> certList, EuropeCountry country) {
         this.urlString = urlString;
         this.certList = certList;
         this.country = country;
     }
 
     public TslMetaData(TrustServiceList tsl, URL url, File filename) {
-        this(tsl, url, filename, new ArrayList<X509Certificate>());
+        this(tsl, url, filename, new ArrayList<AaaCertificate>());
     }
 
-    public TslMetaData(TrustServiceList tsl, URL url, File fileName, List<X509Certificate> certList) {
+    public TslMetaData(TrustServiceList tsl, URL url, File fileName, List<AaaCertificate> certList) {
         this.tsl = tsl;
         this.url = url;
         this.tslFile = fileName;
@@ -58,11 +58,11 @@ public class TslMetaData {
         }
     }
 
-    public List<X509Certificate> getCertList() {
+    public List<AaaCertificate> getCertList() {
         return certList;
     }
 
-    public void setCertList(List<X509Certificate> certList) {
+    public void setCertList(List<AaaCertificate> certList) {
         this.certList = certList;
     }
 
@@ -106,11 +106,11 @@ public class TslMetaData {
         this.urlString = urlString;
     }
 
-    public X509Certificate getUsedTslSigCert() {
+    public AaaCertificate getUsedTslSigCert() {
         return usedTslSigCert;
     }
 
-    public void setUsedTslSigCert(X509Certificate usedTslSigCert) {
+    public void setUsedTslSigCert(AaaCertificate usedTslSigCert) {
         this.usedTslSigCert = usedTslSigCert;
     }
 

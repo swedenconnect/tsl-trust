@@ -16,6 +16,7 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.content;
 
+import com.aaasec.lib.aaacert.AaaCertificate;
 import se.tillvaxtverket.tsltrust.common.html.elements.ButtonElement;
 import se.tillvaxtverket.tsltrust.common.html.elements.CheckboxElement;
 import se.tillvaxtverket.tsltrust.common.html.elements.GenericHtmlElement;
@@ -26,7 +27,6 @@ import se.tillvaxtverket.tsltrust.common.html.elements.TextObject;
 import se.tillvaxtverket.tsltrust.common.utils.core.CorePEM;
 import se.tillvaxtverket.tsltrust.common.utils.core.FnvHash;
 import se.tillvaxtverket.tsltrust.common.utils.general.CertificateUtils;
-import se.tillvaxtverket.tsltrust.common.utils.general.KsCertFactory;
 import se.tillvaxtverket.tsltrust.weblogic.data.ExternalCert;
 import se.tillvaxtverket.tsltrust.weblogic.data.TslCertificates;
 import se.tillvaxtverket.tsltrust.weblogic.data.TslPolicy;
@@ -44,7 +44,6 @@ import se.tillvaxtverket.tsltrust.weblogic.utils.ASN1Util;
 import se.tillvaxtverket.tsltrust.weblogic.utils.ExtractorUtil;
 import se.tillvaxtverket.tsltrust.weblogic.utils.HtmlUtil;
 import se.tillvaxtverket.tsltrust.weblogic.utils.PolicyUtils;
-import iaik.x509.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -193,7 +192,7 @@ public class PolicyInfoElements implements HtmlConstants, TTConstants {
         boolean selectedCert = false;
         List<ExternalCert> externalCerts = policyDb.getExternalCerts();
         for (ExternalCert extCert : externalCerts) {
-            X509Certificate cert = extCert.getCert();
+            AaaCertificate cert = extCert.getCert();
             if (cert == null) {
                 continue;
             }
@@ -232,9 +231,9 @@ public class PolicyInfoElements implements HtmlConstants, TTConstants {
         //Block list
         List<String> blockCertIds = valPolicy.getBlockCertIds();
         List<String> consCertList = new ArrayList<String>();
-        Map<String, X509Certificate> certMap = new HashMap<String, X509Certificate>();
+        Map<String, AaaCertificate> certMap = new HashMap<String, AaaCertificate>();
         for (String bCertId : blockCertIds) {
-            X509Certificate iaikCert = policyUtils.getIAIKCert(bCertId);
+            AaaCertificate iaikCert = policyUtils.getIAIKCert(bCertId);
             if (iaikCert != null) {
                 certMap.put(bCertId, iaikCert);
                 consCertList.add(bCertId);
@@ -249,7 +248,7 @@ public class PolicyInfoElements implements HtmlConstants, TTConstants {
             blockedCertElm.add(new InfoTableElement("No blocked trust services in list"));
         } else {
             for (String bCertId : consCertList) {
-                X509Certificate bCert = certMap.get(bCertId);
+                AaaCertificate bCert = certMap.get(bCertId);
                 String shortCertName = ASN1Util.getShortCertName(bCert);
                 InfoTableSection bCertSect = blockedCertElm.addNewSection(tm);
 
@@ -402,10 +401,10 @@ public class PolicyInfoElements implements HtmlConstants, TTConstants {
                     "certEntryInp"
                 });
 
-        X509Certificate cert;
+        AaaCertificate cert;
         String pemCert;
         try {
-            cert = KsCertFactory.getIaikCert(CertificateUtils.getCertificate(session.getExtCertEntry()));
+            cert = CertificateUtils.getCertificate(session.getExtCertEntry());
             pemCert = CorePEM.getPemCert(cert.getEncoded());
             session.setExtCertEntry(pemCert);
             certEntryText.setText(pemCert);
@@ -437,9 +436,9 @@ public class PolicyInfoElements implements HtmlConstants, TTConstants {
         //
         List<ExternalCert> externalCerts = policyDb.getExternalCerts();
         for (ExternalCert extCert : externalCerts) {
-            X509Certificate cert;
+            AaaCertificate cert;
             try {
-                cert = KsCertFactory.getIaikCert(CertificateUtils.getCertificate(extCert.getB64Cert()));
+                cert = CertificateUtils.getCertificate(extCert.getB64Cert());
             } catch (Exception ex) {
                 cert = null;
                 externalCerts.remove(extCert);

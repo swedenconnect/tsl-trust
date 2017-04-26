@@ -16,7 +16,7 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.content.ts;
 
-import iaik.x509.X509Certificate;
+import com.aaasec.lib.aaacert.AaaCertificate;
 import java.util.List;
 import se.tillvaxtverket.tsltrust.common.tsl.ServiceHistoryInstance;
 import se.tillvaxtverket.tsltrust.common.tsl.TrustService;
@@ -87,9 +87,9 @@ public class TrustServiceInformation implements HtmlConstants, TTConstants {
             }
             ServiceExtensioininfo.addExtensionInfo(sie, extSect, tm);
         }
-        List<X509Certificate> certs = ts.getServiceDigitalIdentityCerts();
+        List<AaaCertificate> certs = ts.getServiceDigitalIdentityCerts();
         if (!certs.isEmpty()) {
-            for (X509Certificate cert : certs) {
+            for (AaaCertificate cert : certs) {
                 try {
                     itUtil.addCertificate(tsDataElm, cert, "Service Certificate", true);
                 } catch (Exception ex) {

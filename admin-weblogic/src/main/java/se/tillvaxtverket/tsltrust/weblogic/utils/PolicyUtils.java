@@ -16,12 +16,12 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.utils;
 
+import com.aaasec.lib.aaacert.AaaCertificate;
 import se.tillvaxtverket.tsltrust.common.utils.core.Base64Coder;
 import se.tillvaxtverket.tsltrust.common.utils.core.CorePEM;
 import se.tillvaxtverket.tsltrust.common.utils.core.FnvHash;
 import se.tillvaxtverket.tsltrust.common.utils.general.CertificateUtils;
 import se.tillvaxtverket.tsltrust.common.utils.general.FileOps;
-import se.tillvaxtverket.tsltrust.common.utils.general.KsCertFactory;
 import se.tillvaxtverket.tsltrust.weblogic.content.HtmlConstants;
 import se.tillvaxtverket.tsltrust.weblogic.content.TTConstants;
 import se.tillvaxtverket.tsltrust.weblogic.data.ExternalCert;
@@ -32,7 +32,6 @@ import se.tillvaxtverket.tsltrust.weblogic.db.TslCertDb;
 import se.tillvaxtverket.tsltrust.weblogic.db.ValPoliciesDbUtil;
 import se.tillvaxtverket.tsltrust.weblogic.models.SessionModel;
 import se.tillvaxtverket.tsltrust.weblogic.models.TslTrustModel;
-import iaik.x509.X509Certificate;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -65,8 +64,8 @@ public class PolicyUtils implements TTConstants, HtmlConstants {
     }
 
     /**
-     * If not initialized, or upon server update, reload policy parameter choices
-     * from the current TslCertificates database.
+     * If not initialized, or upon server update, reload policy parameter
+     * choices from the current TslCertificates database.
      */
     public void recachePolicyParameters() {
         if (recacheFile.canRead()) {
@@ -107,6 +106,7 @@ public class PolicyUtils implements TTConstants, HtmlConstants {
 
     /**
      * Get signature configuration parameter choices
+     *
      * @return Signature configuration parameter choices
      */
     public List<String> getTslSignatureVals() {
@@ -115,6 +115,7 @@ public class PolicyUtils implements TTConstants, HtmlConstants {
 
     /**
      * Get country configuration parameter choices
+     *
      * @return Country configuration parameter choices
      */
     public List<String> getTslStateVals() {
@@ -123,6 +124,7 @@ public class PolicyUtils implements TTConstants, HtmlConstants {
 
     /**
      * Get service status configuration parameter choices
+     *
      * @return Service status configuration parameter choices
      */
     public List<String> getTslStatusVals() {
@@ -131,6 +133,7 @@ public class PolicyUtils implements TTConstants, HtmlConstants {
 
     /**
      * Get service type configuration parameter choices
+     *
      * @return Service type configuration parameter choices
      */
     public List<String> getTslTypeVals() {
@@ -138,9 +141,12 @@ public class PolicyUtils implements TTConstants, HtmlConstants {
     }
 
     /**
-     * Get the list of unselected TSL policies within a validation policy. This function is primarily used to
-     * provide data to a select drop-down list for adding a new currently not selected TSL policy.
-     * @param valPolicy The Validation policy where the list of TSL policies are not currently in use
+     * Get the list of unselected TSL policies within a validation policy. This
+     * function is primarily used to provide data to a select drop-down list for
+     * adding a new currently not selected TSL policy.
+     *
+     * @param valPolicy The Validation policy where the list of TSL policies are
+     * not currently in use
      * @return List of TSL policy names
      */
     public List<String> getUnselectedTslPolicies(ValidationPolicy valPolicy) {
@@ -156,7 +162,9 @@ public class PolicyUtils implements TTConstants, HtmlConstants {
     }
 
     /**
-     * Get the list of TSL service certificates that matches a given validation policy
+     * Get the list of TSL service certificates that matches a given validation
+     * policy
+     *
      * @param valPolicy The validation policy used to test compliance
      * @return List of TSL service certificate database records.
      */
@@ -244,8 +252,12 @@ public class PolicyUtils implements TTConstants, HtmlConstants {
     }
 
     /**
-     * Get a list of countries supported by a list of TSL service certificate records
-     * @param policyCompliantCerts The list of TSL certificate records from which country names are extracted     * 
+     * Get a list of countries supported by a list of TSL service certificate
+     * records
+     *
+     * @param policyCompliantCerts The list of TSL certificate records from
+     * which country names are extracted
+     *
      * @return List of country names
      */
     public List<String> getStateList(List<TslCertificates> policyCompliantCerts) {
@@ -261,9 +273,12 @@ public class PolicyUtils implements TTConstants, HtmlConstants {
     }
 
     /**
-     * Provides the list of TSL service certificate records that is related to a particular national TSL
+     * Provides the list of TSL service certificate records that is related to a
+     * particular national TSL
+     *
      * @param state The 2 letter country code, specifying the target country
-     * @param certList The list of TSL service certificate records from which matching records are extracted
+     * @param certList The list of TSL service certificate records from which
+     * matching records are extracted
      * @return List of TSL service certificate records
      */
     public List<TslCertificates> getStateCertList(String state, List<TslCertificates> certList) {
@@ -277,8 +292,12 @@ public class PolicyUtils implements TTConstants, HtmlConstants {
     }
 
     /**
-     * Get a list of TSP names supported by a list of TSL service certificate records
-     * @param certList The list of TSL certificate records from which TSP names are extracted     * 
+     * Get a list of TSP names supported by a list of TSL service certificate
+     * records
+     *
+     * @param certList The list of TSL certificate records from which TSP names
+     * are extracted
+     *
      * @return List of TSP names
      */
     public List<String> getTspList(List<TslCertificates> certList) {
@@ -294,9 +313,12 @@ public class PolicyUtils implements TTConstants, HtmlConstants {
     }
 
     /**
-     * Provides the list of TSL service certificate records that is related to a particular national TSP
+     * Provides the list of TSL service certificate records that is related to a
+     * particular national TSP
+     *
      * @param tsp The name of the TSP, specifying the target TSP
-     * @param certList The list of TSL service certificate records from which matching records are extracted
+     * @param certList The list of TSL service certificate records from which
+     * matching records are extracted
      * @return List of TSL service certificate records
      */
     public List<TslCertificates> getTspCertList(String tsp, List<TslCertificates> certList) {
@@ -327,10 +349,10 @@ public class PolicyUtils implements TTConstants, HtmlConstants {
             }
         }
         // Final chance, check latest entered external cert
-        X509Certificate cert;
+        AaaCertificate cert;
         String pemCert;
         try {
-            cert = KsCertFactory.getIaikCert(CertificateUtils.getCertificate(extCertEntry));
+            cert = CertificateUtils.getCertificate(extCertEntry);
             pemCert = CorePEM.getPemCert(cert.getEncoded());
             return (CorePEM.trimPemCert(pemCert));
         } catch (Exception ex) {
@@ -339,13 +361,13 @@ public class PolicyUtils implements TTConstants, HtmlConstants {
         return "";
     }
 
-    public X509Certificate getIAIKCert(String certHash) {
+    public AaaCertificate getIAIKCert(String certHash) {
         List<TslCertificates> dbCertList = tslCertDb.getAllTslCertificate(false);
         for (TslCertificates tc : dbCertList) {
             if (tc.getTslCertHash().equals(certHash)) {
                 try {
                     byte[] cert = CertificateUtils.getCertificate(tc.getTslCertificate()).getEncoded();
-                    X509Certificate iaikCert = KsCertFactory.getIaikCert(cert);
+                    AaaCertificate iaikCert = new AaaCertificate(cert);
                     return iaikCert;
                 } catch (Exception ex) {
                 }
@@ -354,7 +376,10 @@ public class PolicyUtils implements TTConstants, HtmlConstants {
         List<ExternalCert> externalCerts = policyDb.getExternalCerts();
         for (ExternalCert extCert : externalCerts) {
             if (extCert.getCertificateId().equals(certHash)) {
-                return KsCertFactory.getIaikCert(Base64Coder.decodeLines(extCert.getB64Cert()));
+                try {
+                    return new AaaCertificate(Base64Coder.decodeLines(extCert.getB64Cert()));
+                } catch (Exception e) {
+                }
             }
         }
         return null;

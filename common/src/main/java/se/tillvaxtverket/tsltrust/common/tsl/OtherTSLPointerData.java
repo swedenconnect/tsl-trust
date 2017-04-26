@@ -16,7 +16,7 @@
  */
 package se.tillvaxtverket.tsltrust.common.tsl;
 
-import iaik.x509.X509Certificate;
+import com.aaasec.lib.aaacert.AaaCertificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,7 +35,6 @@ import org.etsi.uri.x02231.v2.TSLTypeDocument;
 import org.etsi.uri.x02231.v2.additionaltypes.MimeTypeDocument;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import se.tillvaxtverket.tsltrust.common.utils.general.KsCertFactory;
 
 /**
  * Java object for XML parsing TSL other pointers data
@@ -51,7 +50,7 @@ public class OtherTSLPointerData {
     private String tSLLocation="";
     private InternationalNamesType schemeOperatorName;
     private NonEmptyURIListType SchemeTypeCommunityRules;
-    private List<iaik.x509.X509Certificate> otpCertificates = new ArrayList<iaik.x509.X509Certificate>();
+    private List<AaaCertificate> otpCertificates = new ArrayList<AaaCertificate>();
     private List<MultiLangStringType> textualAdditionalInfo = new ArrayList<MultiLangStringType>();
 
     public OtherTSLPointerData(OtherTSLPointerType otp) {
@@ -70,9 +69,9 @@ public class OtherTSLPointerData {
                 DigitalIdentityType[] digitalIdList = sdi.getDigitalIdArray();
                 for (DigitalIdentityType digId : digitalIdList) {
                     byte[] cert = digId.getX509Certificate();
-                    X509Certificate iaikCert = KsCertFactory.getIaikCert(cert);
-                    if (iaikCert != null) {
-                        otpCertificates.add(iaikCert);
+                    AaaCertificate aCert = new AaaCertificate(cert);
+                    if (aCert != null) {
+                        otpCertificates.add(aCert);
                     }
                 }
             }
@@ -138,7 +137,7 @@ public class OtherTSLPointerData {
         return otp;
     }
 
-    public List<X509Certificate> getOtpCertificates() {
+    public List<AaaCertificate> getOtpCertificates() {
         return otpCertificates;
     }
 
