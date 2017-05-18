@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import se.tillvaxtverket.tsltrust.common.utils.general.KsCertFactory;
+import se.tillvaxtverket.tsltrust.common.iaik.KsCertFactory;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.document.SigDocument;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.models.SigValidationBaseModel;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.models.SigValidationModel;

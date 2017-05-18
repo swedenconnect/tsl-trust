@@ -16,7 +16,7 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.issuestack;
 
-import iaik.x509.X509Certificate;
+import com.aaasec.lib.aaacert.AaaCertificate;
 import java.util.Calendar;
 import java.util.Date;
 import se.tillvaxtverket.tsltrust.common.tsl.TrustServiceList;
@@ -42,7 +42,7 @@ public class IssueChecker {
         TSLIssueStack.push(country, TSLIssueID.tslExpiry, expiryWarning, null);
     }
 
-    public static void checkCertExpiry(EuropeCountry country, X509Certificate usedSignCert) {
+    public static void checkCertExpiry(EuropeCountry country, AaaCertificate usedSignCert) {
         Date notAfter = usedSignCert.getNotAfter();
         TSLIssueSubcode expiryWarning = checkDateForExpiry(notAfter, 45);
         if (expiryWarning == null) {

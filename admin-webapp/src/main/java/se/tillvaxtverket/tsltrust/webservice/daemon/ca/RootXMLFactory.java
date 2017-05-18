@@ -16,10 +16,11 @@
  */
 package se.tillvaxtverket.tsltrust.webservice.daemon.ca;
 
+import com.aaasec.lib.aaacert.AaaCertificate;
+import java.io.IOException;
 import se.tillvaxtverket.tsltrust.common.utils.core.PEM;
 import se.tillvaxtverket.tsltrust.common.utils.general.URIComponentCoder;
 import se.tillvaxtverket.tsltrust.weblogic.data.ValidationPolicy;
-import iaik.x509.X509Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.List;
 import java.util.logging.Level;
@@ -55,24 +56,19 @@ public class RootXMLFactory {
 
             for (CertificationAuthority ca : caList) {
 
-                try {
-                    X509Certificate cert = getRoot(ca);
-                    Element root = doc.createElement("tslt:Root");
-                    e1.appendChild(root);
-                    Element rootName = doc.createElement("tslt:PolicyName");
-                    rootName.setTextContent(ca.getCaName());
-                    root.appendChild(rootName);
-                    Element policyDescription = doc.createElement("tslt:PolicyDescription");
-                    policyDescription.setTextContent(URIComponentCoder.encodeURIComponent(getPolicyDescription(ca,vpList)));
-                    root.appendChild(policyDescription);
-                    Element rootCert = doc.createElement("tslt:RootCertificate");                    
-                    String pemCert = PEM.getPemCert(cert.getEncoded());
-                    rootCert.setTextContent(PEM.trimPemCert(pemCert).trim());
-                    root.appendChild(rootCert);
-
-                } catch (CertificateEncodingException ex) {
-                    Logger.getLogger(RootXMLFactory.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                AaaCertificate cert = getRoot(ca);
+                Element root = doc.createElement("tslt:Root");
+                e1.appendChild(root);
+                Element rootName = doc.createElement("tslt:PolicyName");
+                rootName.setTextContent(ca.getCaName());
+                root.appendChild(rootName);
+                Element policyDescription = doc.createElement("tslt:PolicyDescription");
+                policyDescription.setTextContent(URIComponentCoder.encodeURIComponent(getPolicyDescription(ca,vpList)));
+                root.appendChild(policyDescription);
+                Element rootCert = doc.createElement("tslt:RootCertificate");
+                String pemCert = PEM.getPemCert(cert.getEncoded());
+                rootCert.setTextContent(PEM.trimPemCert(pemCert).trim());
+                root.appendChild(rootCert);
             }
 
             //System.out.println("The new XML document:\n" + getDocText(doc));
@@ -106,7 +102,7 @@ public class RootXMLFactory {
         return "";
     }
 
-    private static X509Certificate getRoot(CertificationAuthority ca) {
+    private static AaaCertificate getRoot(CertificationAuthority ca) {
         if (ca.initKeyStore()) {
             return ca.getSelfSignedCert();
         }

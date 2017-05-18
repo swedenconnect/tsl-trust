@@ -16,6 +16,7 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.utils;
 
+import com.aaasec.lib.aaacert.AaaCertificate;
 import se.tillvaxtverket.tsltrust.weblogic.models.InfoTableElement;
 import se.tillvaxtverket.tsltrust.weblogic.models.InfoTableElements;
 import se.tillvaxtverket.tsltrust.weblogic.models.InfoTableModel;
@@ -202,12 +203,8 @@ public class InfoTableUtils implements HtmlConstants {
         return foldElement;
     }
 
-    public void addCertificate(InfoTableElements parentElements, iaik.x509.X509Certificate cert, String heading, boolean unfold) {
-        try {
-            addCertificate(parentElements, cert.getEncoded(), heading, unfold);
-        } catch (CertificateEncodingException ex) {
-            addCertificate(parentElements, new byte[]{}, heading, unfold);
-        }
+    public void addCertificate(InfoTableElements parentElements, AaaCertificate cert, String heading, boolean unfold) {
+        addCertificate(parentElements, cert.getEncoded(), heading, unfold);
     }
 
     public void addCertificate(InfoTableElements parentElements, byte[] cert, String heading, boolean unfold) {
@@ -219,7 +216,7 @@ public class InfoTableUtils implements HtmlConstants {
     }
 
     public void addOtherTslPointerInfo(InfoTableElements parentElements,
-            String url, List<Object[]> addInfoList, List<iaik.x509.X509Certificate> certList) {
+            String url, List<Object[]> addInfoList, List<AaaCertificate> certList) {
 
         if (url == null || url.length() == 0) {
             return;
@@ -275,7 +272,7 @@ public class InfoTableUtils implements HtmlConstants {
                 }
             }
         }
-        for (iaik.x509.X509Certificate cert : certList) {
+        for (AaaCertificate cert : certList) {
             addCertificate(tslPtrElm, cert, "Certificate", true);
         }
 

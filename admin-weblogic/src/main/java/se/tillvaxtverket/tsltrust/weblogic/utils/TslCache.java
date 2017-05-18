@@ -16,7 +16,7 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.utils;
 
-import iaik.x509.X509Certificate;
+import com.aaasec.lib.aaacert.AaaCertificate;
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -377,7 +377,7 @@ public class TslCache implements TTConstants {
 //                        String normalizedURLstring = uri.toASCIIString();
 //                        tslLocation = normalizedURLstring;
                         // Get OTP data
-                        List<iaik.x509.X509Certificate> certList = otp.getOtpCertificates();
+                        List<AaaCertificate> certList = otp.getOtpCertificates();
                         ptrs.add(new TslMetaData(tslLocation, certList, country));
                     } catch (Exception ex) {
                     }
@@ -400,8 +400,8 @@ public class TslCache implements TTConstants {
         return false;
     }
 
-    private List<X509Certificate> getTSLSignerCert(OtherTSLPointerType otpt) {
-        List<X509Certificate> certList = new ArrayList<X509Certificate>();
+    private List<AaaCertificate> getTSLSignerCert(OtherTSLPointerType otpt) {
+        List<AaaCertificate> certList = new ArrayList<AaaCertificate>();
         //Test
         try {
             ServiceDigitalIdentityListType sdis = otpt.getServiceDigitalIdentities();
@@ -409,7 +409,7 @@ public class TslCache implements TTConstants {
             for (DigitalIdentityListType sdi : sdil) {
                 DigitalIdentityType[] digitalIdList = sdi.getDigitalIdArray();
                 for (DigitalIdentityType di : digitalIdList) {
-                    X509Certificate certificate = CertificateUtils.getCertificate(di.getX509Certificate());
+                    AaaCertificate certificate = CertificateUtils.getCertificate(di.getX509Certificate());
                     certList.add(certificate);
                 }
             }
@@ -426,9 +426,9 @@ public class TslCache implements TTConstants {
      */
     public void checkTslSignature(TslMetaData tslMd) {
         TrustServiceList tsl = tslMd.getTsl();
-        List<X509Certificate> otherTslPointerCerts = tslMd.getCertList();
+        List<AaaCertificate> otherTslPointerCerts = tslMd.getCertList();
         String sigStatus;
-        X509Certificate usedSignCert = null;
+        AaaCertificate usedSignCert = null;
         SigVerifyResult sigVer = null;
         try {
             sigVer = tsl.verifySignature();
@@ -474,14 +474,14 @@ public class TslCache implements TTConstants {
         IssueChecker.checkCertExpiry(tslMd.getCountry(), usedSignCert);
 
         sigStatus = SIGNSTATUS_UNVERIFIABLE;
-        for (X509Certificate lotlOtpCert : otherTslPointerCerts) {
+        for (AaaCertificate lotlOtpCert : otherTslPointerCerts) {
             // Acept cert match
-            if (usedSignCert.equals(lotlOtpCert)) {
+            if (usedSignCert.getCert().equals(lotlOtpCert.getCert())) {
                 sigStatus = SIGNSTATUS_VERIFIED;
             }
             // Allow also PK and DN match
             if (usedSignCert.getPublicKey().equals(lotlOtpCert.getPublicKey())) {
-                if (usedSignCert.getSubjectDN().equals(lotlOtpCert.getSubjectDN())) {
+                if (usedSignCert.getCert().getSubjectDN().equals(lotlOtpCert.getCert().getSubjectDN())) {
                     sigStatus = SIGNSTATUS_VERIFIED;
                 }
             }
@@ -512,7 +512,7 @@ public class TslCache implements TTConstants {
         return false;
     }
 
-    private boolean isWithinValidityPeriod(X509Certificate cert) {
+    private boolean isWithinValidityPeriod(AaaCertificate cert) {
         Calendar present = Calendar.getInstance();
         Calendar certNotBefore = Calendar.getInstance();
         certNotBefore.setTime(cert.getNotBefore());

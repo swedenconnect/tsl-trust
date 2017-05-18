@@ -16,6 +16,15 @@
  */
 package se.tillvaxtverket.tsltrust.webservice.daemon.ca;
 
+import com.aaasec.lib.aaacert.AaaCRL;
+import com.aaasec.lib.aaacert.AaaCertificate;
+import com.aaasec.lib.aaacert.CertFactory;
+import com.aaasec.lib.aaacert.data.CRLEntryData;
+import com.aaasec.lib.aaacert.data.CertRequestModel;
+import com.aaasec.lib.aaacert.enums.OidName;
+import com.aaasec.lib.aaacert.enums.SupportedExtension;
+import com.aaasec.lib.aaacert.extension.ExtensionInfo;
+import com.aaasec.lib.aaacert.utils.CertUtils;
 import se.tillvaxtverket.tsltrust.common.utils.core.FnvHash;
 import se.tillvaxtverket.tsltrust.common.utils.general.FileOps;
 import se.tillvaxtverket.tsltrust.weblogic.data.DbCALog;
@@ -23,73 +32,75 @@ import se.tillvaxtverket.tsltrust.weblogic.data.DbCAParam;
 import se.tillvaxtverket.tsltrust.weblogic.data.DbCert;
 import se.tillvaxtverket.tsltrust.weblogic.db.CaSQLiteUtil;
 import se.tillvaxtverket.tsltrust.weblogic.models.TslTrustModel;
-import iaik.asn1.ObjectID;
-import iaik.asn1.structures.AlgorithmID;
-import iaik.asn1.structures.DistributionPoint;
-import iaik.asn1.structures.GeneralName;
-import iaik.asn1.structures.GeneralNames;
-import iaik.asn1.structures.Name;
-import iaik.asn1.structures.PolicyInformation;
-import iaik.asn1.structures.PolicyQualifierInfo;
-import iaik.utils.Util;
-import iaik.x509.RevokedCertificate;
-import iaik.x509.V3Extension;
-import iaik.x509.X509CRL;
-import iaik.x509.X509Certificate;
-import iaik.x509.extensions.AuthorityInfoAccess;
-import iaik.x509.extensions.AuthorityKeyIdentifier;
-import iaik.x509.extensions.CRLDistributionPoints;
-import iaik.x509.extensions.CRLNumber;
-import iaik.x509.extensions.CertificatePolicies;
-import iaik.x509.extensions.IssuerAltName;
-import iaik.x509.extensions.IssuingDistributionPoint;
-import iaik.x509.extensions.ReasonCode;
-import iaik.x509.extensions.SubjectKeyIdentifier;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.cert.X509CRLEntry;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CRLException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
-import java.util.Enumeration;
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import iaik.x509.extensions.BasicConstraints;
-import iaik.x509.extensions.PolicyConstraints;
-import iaik.x509.extensions.PolicyMappings;
-import iaik.x509.extensions.qualified.QCStatements;
 import java.util.Date;
+import java.util.Iterator;
+import javax.security.auth.x500.X500Principal;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.CRLDistPoint;
+import org.bouncycastle.asn1.x509.CRLNumber;
+import org.bouncycastle.asn1.x509.CRLReason;
+import org.bouncycastle.asn1.x509.CertificatePolicies;
+import org.bouncycastle.asn1.x509.DistributionPoint;
+import org.bouncycastle.asn1.x509.DistributionPointName;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
+import org.bouncycastle.asn1.x509.PolicyInformation;
+import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
+import org.bouncycastle.cert.X509ExtensionUtils;
+import org.bouncycastle.cert.X509CRLEntryHolder;
+import org.bouncycastle.cert.X509CRLHolder;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import se.tillvaxtverket.tsltrust.weblogic.models.TslTrustConfig;
 
 /**
  * This class implements the Certification Authority logic of TSL Trust.
- * Certificates compliant with defined policies are certified under a defined policy Root created
- * by TSL Trust.
+ * Certificates compliant with defined policies are certified under a defined
+ * policy Root created by TSL Trust.
  */
 public class CertificationAuthority implements CaKeyStoreConstants {
 
     private static final Logger LOG = Logger.getLogger(CertificationAuthority.class.getName());
     private KeyStore key_store;
-    private File keyStoreFile;
-    private String caName;
-    private String caID;
-    private X509Certificate caRoot = null;
-    private Name rootIssuer;
+    private final File keyStoreFile;
+    private final String caName;
+    private final String caID;
+    private AaaCertificate caRoot = null;
+    private X500Principal rootIssuer;
     private boolean initialized = false;
-    private String caDir;
+    private final String caDir;
     private long nextSerial;
-    private File crlFile;
-    private File exportCrlFile;
-    private String crlDpUrl;
-    private X509CRL latestCrl = null;
+    private final File crlFile;
+    private final File exportCrlFile;
+    private final String crlDpUrl;
+    private X509CRLHolder latestCrl = null;
     long crlValPeriod;
 
     public CertificationAuthority(String cAName, String caDir, TslTrustModel model) {
@@ -100,8 +111,8 @@ public class CertificationAuthority implements CaKeyStoreConstants {
         crlValPeriod = model.getTslRefreshDelay() * 2 + (1000 * 60 * 60); //Make CRLs last the update period x 2 + 1 hour;
         keyStoreFile = new File(this.caDir, "ca.keystore");
         crlFile = new File(caDir, caID + ".crl");
-        exportCrlFile = new File(FileOps.getfileNameString(conf.getCaFileStorageLocation() , "crl"), caID + ".crl");
-        crlDpUrl = FileOps.getfileNameString(conf.getCaDistributionURL() , "crl/" + caID + ".crl");
+        exportCrlFile = new File(FileOps.getfileNameString(conf.getCaFileStorageLocation(), "crl"), caID + ".crl");
+        crlDpUrl = FileOps.getfileNameString(conf.getCaDistributionURL(), "crl/" + caID + ".crl");
 
     }
 
@@ -112,9 +123,9 @@ public class CertificationAuthority implements CaKeyStoreConstants {
 //                key_store = KeyStore.getInstance("IAIKKeyStore", "IAIK");
                 key_store.load(new FileInputStream(keyStoreFile), KS_PASSWORD);
                 if (crlFile.canRead()) {
-                    latestCrl = new X509CRL(new FileInputStream(crlFile));
+                    latestCrl = new AaaCRL(crlFile).getCrl();
                 }
-                X509Certificate root = getSelfSignedCert();
+                AaaCertificate root = getSelfSignedCert();
                 if (root != null) {
                     initialized = true;
                 }
@@ -125,9 +136,9 @@ public class CertificationAuthority implements CaKeyStoreConstants {
         return initialized;
     }
 
-    public X509Certificate getSelfSignedCert() {
+    public AaaCertificate getSelfSignedCert() {
         try {
-            X509Certificate cert = Util.convertCertificate(key_store.getCertificate(ROOT));
+            AaaCertificate cert = new AaaCertificate(key_store.getCertificate(ROOT).getEncoded());
             caRoot = cert;
         } catch (Exception ex) {
             LOG.warning(ex.getMessage());
@@ -152,7 +163,7 @@ public class CertificationAuthority implements CaKeyStoreConstants {
         return initialized;
     }
 
-    public X509CRL getLatestCrl() {
+    public X509CRLHolder getLatestCrl() {
         return latestCrl;
     }
 
@@ -160,7 +171,7 @@ public class CertificationAuthority implements CaKeyStoreConstants {
         return exportCrlFile;
     }
 
-    public X509Certificate issueXCert(X509Certificate orgCert) {
+    public AaaCertificate issueXCert(AaaCertificate orgCert) throws IOException {
 
         DbCAParam cp = CaSQLiteUtil.getParameter(caDir, CERT_SERIAL_KEY);
         if (cp == null) {
@@ -169,53 +180,61 @@ public class CertificationAuthority implements CaKeyStoreConstants {
         nextSerial = cp.getIntValue();
 
         BigInteger certSerial = BigInteger.valueOf(nextSerial);
-        List<V3Extension> extList = new LinkedList<V3Extension>();
-        Enumeration e = orgCert.listExtensions();
+        List<Extension> extList = new ArrayList<>();
+        Iterator<ExtensionInfo> e = orgCert.getExtensionInfoList().iterator();
 
         //System.out.println("Original cert extensions:");
         //Get extensions form orgCert
         boolean policy = false;
         if (e != null) {
-            while (e.hasMoreElements()) {
-                V3Extension ext = (V3Extension) e.nextElement();
+            while (e.hasNext()) {
+                ExtensionInfo ext = e.next();
                 //System.out.println(ext.getObjectID().getNameAndID() + " " + ext.toString());
                 //Replace policy with AnyPolicy
-                ObjectID extOID = ext.getObjectID();
-                if (extOID == CertificatePolicies.oid) {
-                    ext = getAnyCertificatePolicies();
-                    policy = true;
+                if (ext.getExtensionType().equals(SupportedExtension.certificatePolicies)){
+                    CertificatePolicies cpe = getAnyCertificatePolicies();
+                    ext.setExtDataASN1(cpe.toASN1Primitive());
+                    ext.setExtData(cpe.getEncoded());
+                    policy=true;
                 }
-                // Ignore the following extensions
-                if (extOID == IssuerAltName.oid
-                        || extOID.equals(CRLDistributionPoints.oid)
-                        || extOID.equals(AuthorityInfoAccess.oid)
-                        || extOID.equals(AuthorityKeyIdentifier.oid)
-                        || extOID.equals(PolicyConstraints.oid)
-                        || extOID.equals(PolicyMappings.oid)
-                        || extOID.equals(QCStatements.oid)
-                        || extOID.getID().equals("1.3.6.1.4.1.8301.3.5") // German signature law validation rules
-                        ) {
-                    continue;
+                
+                switch (ext.getExtensionType()){
+                    case cRLDistributionPoints:
+                    case basicConstraints:
+                    case authorityInfoAccess:
+                    case authorityKeyIdentifier:
+                    case policyConstraints:
+                    case policyMappings:
+                    case qCStatements:
+                        break;
+                    default:
+                        if (ext.getOid().getId().equalsIgnoreCase("1.3.6.1.4.1.8301.3.5")){
+                            // German signature law validation rules
+                            break;
+                        }
+                        extList.add(new Extension(ext.getOid(), ext.isCritical(), ext.getExtData()));
+                    
                 }
-                extList.add(ext);
+                
+              
             }
         } else {
-            V3Extension bc = new BasicConstraints(false);
-            extList.add(bc);
-            policy = true;
+            extList.add(new Extension(Extension.basicConstraints, false, new BasicConstraints(true).getEncoded("DER")));
+            policy = false;
         }
         // If no policy in orgCert then add AnyPolicy to list
         if (!policy) {
-            extList.add(getAnyCertificatePolicies());
+            CertificatePolicies cpe = getAnyCertificatePolicies();
+            extList.add(new Extension(Extension.certificatePolicies, false, cpe.getEncoded("DER")));
         }
 
         //Copy to extension list
-        V3Extension[] extensions = new V3Extension[extList.size()];
-        for (int i = 0; i < extList.size(); i++) {
-            V3Extension ext = extList.get(i);
-            extensions[i] = ext;
-        }
-        X509Certificate xCert = createCertificate(orgCert, certSerial, caRoot, AlgorithmID.sha256WithRSAEncryption, extensions);
+//        V3Extension[] extensions = new V3Extension[extList.size()];
+//        for (int i = 0; i < extList.size(); i++) {
+//            V3Extension ext = extList.get(i);
+//            extensions[i] = ext;
+//        }
+        AaaCertificate xCert = createCertificate(orgCert, certSerial, caRoot, CertFactory.SHA256WITHRSA, extList);
         //System.out.println((char) 10 + "Issued XCert" + (char) 10 + xCert.toString(true));
         CaSQLiteUtil.addCertificate(xCert, caDir);
 
@@ -233,43 +252,37 @@ public class CertificationAuthority implements CaKeyStoreConstants {
         return xCert;
     }
 
-    public X509Certificate createCertificate(X509Certificate orgCert, BigInteger certSerial,
-            X509Certificate issuerCert, AlgorithmID algorithm, V3Extension[] extensions) {
+    public AaaCertificate createCertificate(AaaCertificate orgCert, BigInteger certSerial,
+            AaaCertificate issuerCert, String algorithm, List<Extension> extensions) {
 
+        AaaCertificate cert = null;
         // create a new certificate
-        X509Certificate cert = new X509Certificate();
-        PublicKey publicKey = orgCert.getPublicKey();
-
         try {
-            // set cert values
-            cert.setSerialNumber(certSerial);
-            cert.setSubjectDN(orgCert.getSubjectDN());
-            cert.setPublicKey(publicKey);
-            cert.setIssuerDN(issuerCert.getSubjectDN());
-            cert.setValidNotBefore(orgCert.getNotBefore());
+            CertRequestModel reqModel = new CertRequestModel();
+            reqModel.setIssuerDN(issuerCert.getSubject());
+            reqModel.setPublicKey(orgCert.getCert().getPublicKey());
+            reqModel.setSerialNumber(certSerial);
+            reqModel.setSubjectDN(orgCert.getSubject());
+            reqModel.setNotBefore(orgCert.getNotBefore());
             if (issuerCert.getNotAfter().after(orgCert.getNotAfter())) {
-                cert.setValidNotAfter(orgCert.getNotAfter());
+                reqModel.setNotAfter(orgCert.getNotAfter());
             } else {
-                cert.setValidNotAfter(issuerCert.getNotAfter());
+                reqModel.setNotAfter(issuerCert.getNotAfter());
             }
-
-            // Add other extensions
-            if (extensions != null) {
-                for (int i = 0; i < extensions.length; i++) {
-                    cert.addExtension(extensions[i]);
-                }
-            }
+            
             // Add AKI
-            byte[] keyID = ((SubjectKeyIdentifier) issuerCert.getExtension(SubjectKeyIdentifier.oid)).get();
-            cert.addExtension(new AuthorityKeyIdentifier(keyID));
-
-            String[] uriStrings = new String[]{crlDpUrl};
-            DistributionPoint distPoint = new DistributionPoint();
-            distPoint.setDistributionPointNameURIs(uriStrings);
-            cert.addExtension(new CRLDistributionPoints(distPoint));
-
-            // and sign the certificate
-            cert.sign(algorithm, (PrivateKey) key_store.getKey(ROOT, KS_PASSWORD));
+            X509ExtensionUtils extUtil = CertUtils.getX509ExtensionUtils();
+            AuthorityKeyIdentifier aki = extUtil.createAuthorityKeyIdentifier(issuerCert);
+            extensions.add(new Extension(Extension.authorityKeyIdentifier, false, aki.getEncoded("DER")));
+            
+            DistributionPoint dp = new DistributionPoint(new DistributionPointName(new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, crlDpUrl))), null, null);
+            CRLDistPoint cdp = new CRLDistPoint(new DistributionPoint[]{dp});
+            extensions.add(new Extension(Extension.cRLDistributionPoints, false, cdp.getEncoded("DER")));
+                        
+            reqModel.setExtensionList(extensions);
+            reqModel.setSigner(new JcaContentSignerBuilder(algorithm).build((PrivateKey) key_store.getKey(ROOT, KS_PASSWORD)));
+            
+            cert = new AaaCertificate(reqModel);
         } catch (Exception ex) {
             cert = null;
             LOG.warning("Error creating the certificate: " + ex.getMessage());
@@ -297,19 +310,21 @@ public class CertificationAuthority implements CaKeyStoreConstants {
     }
 
     private CertificatePolicies getDefCertificatePolicies() {
-        PolicyQualifierInfo policyQualifierInfo = new PolicyQualifierInfo(null, null, "This certificate may be used for demonstration purposes only.");
-        PolicyInformation policyInformation = new PolicyInformation(new ObjectID("1.3.6.1.4.1.2706.2.2.1.1.1.1.1"), new PolicyQualifierInfo[]{policyQualifierInfo});
+        PolicyQualifierInfo policyQualifierInfo = CertUtils.getUserNotice("This certificate may be used for demonstration purposes only.");
+        ASN1EncodableVector pqSeq = new ASN1EncodableVector();
+        pqSeq.add(policyQualifierInfo);
+        PolicyInformation policyInformation = new PolicyInformation(new ASN1ObjectIdentifier("1.3.6.1.4.1.2706.2.2.1.1.1.1.1"), new DERSequence(pqSeq));
         CertificatePolicies certificatePolicies = new CertificatePolicies(new PolicyInformation[]{policyInformation});
         return certificatePolicies;
     }
 
     private CertificatePolicies getAnyCertificatePolicies() {
-        PolicyInformation policyInformation = new PolicyInformation(ObjectID.anyPolicy, null);
+        PolicyInformation policyInformation = new PolicyInformation(new ASN1ObjectIdentifier(OidName.cp_anyPolicy.getOid()), null);
         CertificatePolicies certificatePolicies = new CertificatePolicies(new PolicyInformation[]{policyInformation});
         return certificatePolicies;
     }
 
-    public X509CRL revokeCertificates() {
+    public X509CRLHolder revokeCertificates() {
         long currentTime = System.currentTimeMillis();
         long nextUpdateTime = currentTime + crlValPeriod;
         List<DbCert> certList = CaSQLiteUtil.getCertificates(caDir, true);
@@ -322,59 +337,45 @@ public class CertificationAuthority implements CaKeyStoreConstants {
 
         try {
 
-            X509CRL crl = new X509CRL();
+            AaaCRL crl = new AaaCRL(new Date(currentTime), new Date(nextUpdateTime), caRoot, (PrivateKey) key_store.getKey(ROOT, KS_PASSWORD), CertFactory.SHA256WITHRSA, crlFile);
 
-            crl.setIssuerDN((Name) caRoot.getSubjectDN());
-            crl.setThisUpdate(new Date(currentTime));
-            crl.setNextUpdate(new Date(nextUpdateTime));
-            crl.setSignatureAlgorithm(AlgorithmID.sha256WithRSAEncryption);
-
+            List<Extension> extList = new ArrayList<Extension>();
             // Add AKI
-            byte[] keyID = ((SubjectKeyIdentifier) caRoot.getExtension(SubjectKeyIdentifier.oid)).get();
-            crl.addExtension(new AuthorityKeyIdentifier(keyID));
+            X509ExtensionUtils extu = CertUtils.getX509ExtensionUtils();
+            AuthorityKeyIdentifier aki = extu.createAuthorityKeyIdentifier(caRoot);
+            extList.add(new Extension(Extension.authorityKeyIdentifier, false, aki.getEncoded("DER")));
 
             // CRLNumber to be adjusted to an incremental number
-            CRLNumber cRLNumber = new CRLNumber(BigInteger.valueOf(nextCrlSerial));
-            crl.addExtension(cRLNumber);
+            CRLNumber crlNumber = new CRLNumber(BigInteger.valueOf(nextCrlSerial));
+            extList.add(new Extension(Extension.cRLNumber, false, crlNumber.getEncoded("DER")));
+
+            GeneralNames distributionPointName = new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, crlDpUrl));
+            DistributionPointName dpn = new DistributionPointName(distributionPointName);
+            IssuingDistributionPoint idp = new IssuingDistributionPoint(dpn, false, false);
+            extList.add(new Extension(Extension.issuingDistributionPoint, true, idp.getEncoded("DER")));
 
             // IssuingDistributionPoint
-            GeneralNames distributionPointName = new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, crlDpUrl));
-            IssuingDistributionPoint issuingDistributionPoint = new IssuingDistributionPoint();
-            issuingDistributionPoint.setDistributionPointName(distributionPointName);
+            List<CRLEntryData> crlEdList = new ArrayList<>();
 
-            issuingDistributionPoint.setCritical(true);
-            //issuingDistributionPoint.setOnlyContainsCaCerts(true);
-            crl.addExtension(issuingDistributionPoint);
+            certList.forEach((dbCert) -> {
+                Date revTime = new Date();
+                BigInteger serialNumber = dbCert.getCertificate().getSerialNumber();
+                crlEdList.add(new CRLEntryData(serialNumber, new Date(dbCert.getRevDate()), CRLReason.privilegeWithdrawn));
+            });
 
-            for (DbCert dbCert : certList) {
-                GregorianCalendar revTime = new GregorianCalendar();
-                RevokedCertificate rc = new RevokedCertificate(dbCert.getCertificate(), new Date(dbCert.getRevDate()));
+            crl.updateCrl(new Date(currentTime), new Date(nextUpdateTime), crlEdList, extList);
 
-                // ReasonCode
-                rc.addExtension(new ReasonCode(ReasonCode.privilegeWithdrawn));
-                crl.addCertificate(rc);
-
-            }
-
-
-            crl.sign((PrivateKey) key_store.getKey(ROOT, KS_PASSWORD));
-
-            byte[] crlBytes = crl.toByteArray();
-            // send CRL to ...
-            iaik.utils.Util.saveToFile(crlBytes, crlFile.getAbsolutePath());
             logRevocation(certList);
 
             // receive CRL
-            latestCrl = new X509CRL(crlBytes);
+            latestCrl = crl.getCrl();
             cp.setIntValue(nextCrlSerial + 1);
             CaSQLiteUtil.storeParameter(cp, caDir);
-            //System.out.println(newCrl.toString(true));
             // Store CRL
             FileOps.saveByteFile(FileOps.readBinaryFile(crlFile), exportCrlFile);
-//            FTPops.uploadCRL(caName, caDir);
             return latestCrl;
 
-        } catch (Exception ex) {
+        } catch (IOException | KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException | CRLException | CertificateException | OperatorCreationException ex) {
             LOG.warning(ex.getMessage());
             return null;
         }
@@ -383,12 +384,12 @@ public class CertificationAuthority implements CaKeyStoreConstants {
     public void logRevocation(List<DbCert> revCertList) {
         List<Long> crlList = new LinkedList<Long>();
         if (latestCrl != null) {
-            Enumeration crlEntries = latestCrl.listCertificates();
-
-            while (crlEntries.hasMoreElements()) {
-                long revokedSerial = ((X509CRLEntry) crlEntries.nextElement()).getSerialNumber().longValue();
+            X509CRLEntryHolder revokedCertificate = latestCrl.getRevokedCertificate(BigInteger.ZERO);
+            latestCrl.getRevokedCertificates().iterator().forEachRemaining((crlEntryObj) -> {
+                X509CRLEntryHolder crlEntry = (X509CRLEntryHolder) crlEntryObj;
+                long revokedSerial = crlEntry.getSerialNumber().longValue();
                 crlList.add(revokedSerial);
-            }
+            });
         }
 
         for (DbCert dbCert : revCertList) {
@@ -397,7 +398,8 @@ public class CertificationAuthority implements CaKeyStoreConstants {
                 DbCALog caLog = new DbCALog();
                 caLog.setLogCode(REVOKE_EVENT);
                 caLog.setEventString("Certificate revoked");
-                caLog.setLogParameter(dbCert.getSerial() * 256 + ReasonCode.privilegeWithdrawn);
+                caLog.setLogParameter(dbCert.getSerial() * 256 + CRLReason.privilegeWithdrawn
+                );
                 caLog.setLogTime(dbCert.getRevDate());
                 CaSQLiteUtil.addCertLog(caLog, caDir);
             }

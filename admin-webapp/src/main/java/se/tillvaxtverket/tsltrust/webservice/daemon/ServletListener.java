@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 /**
  * Web application lifecycle listener.
@@ -32,7 +33,7 @@ public class ServletListener implements ServletContextListener {
     private ServletDaemon daemonTask = null;
     
     static{
-            Security.insertProviderAt(new iaik.security.provider.IAIK(),2);        
+        Security.addProvider(new BouncyCastleProvider());
     }
 
     @Override

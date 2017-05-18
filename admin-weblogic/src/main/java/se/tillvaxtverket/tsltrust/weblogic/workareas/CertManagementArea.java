@@ -16,6 +16,7 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.workareas;
 
+import com.aaasec.lib.aaacert.AaaCertificate;
 import se.tillvaxtverket.tsltrust.common.html.elements.ButtonElement;
 import se.tillvaxtverket.tsltrust.common.html.elements.DivElement;
 import se.tillvaxtverket.tsltrust.common.html.elements.GenericHtmlElement;
@@ -38,7 +39,6 @@ import se.tillvaxtverket.tsltrust.weblogic.models.SessionModel;
 import se.tillvaxtverket.tsltrust.weblogic.models.TslTrustModel;
 import se.tillvaxtverket.tsltrust.weblogic.utils.InputValidator;
 import se.tillvaxtverket.tsltrust.weblogic.utils.PolicyUtils;
-import iaik.x509.X509Certificate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -163,7 +163,7 @@ public class CertManagementArea extends WorkArea implements HtmlConstants, TTCon
             InfoTableModel tm = new InfoTableModel("itAjax" + parameter);
             tm.setTableRowClasses(TABLE_SECTION_ROW_EVEN);
             CertificateInformation certInfo = new CertificateInformation(tm, session);
-            X509Certificate iAIKCert = certInfoElm.getCert(parameter);
+            AaaCertificate iAIKCert = certInfoElm.getCert(parameter);
             if (iAIKCert != null) {
                 tm.setElements(certInfo.getCertInfo(iAIKCert));
                 return new InfoTableFactory(tm, session).getTable().toString();

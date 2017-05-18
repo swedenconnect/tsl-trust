@@ -16,7 +16,7 @@
  */
 package se.tillvaxtverket.tsltrust.common.utils.general;
 
-import iaik.x509.X509Certificate;
+import com.aaasec.lib.aaacert.AaaCertificate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -82,8 +82,8 @@ public class GeneralStaticUtils implements Constants {
      * @param pemCerts A concatenated string of PEM certificates
      * @return a list of X509Certificates
      */
-    public static List<X509Certificate> getCertsFromPemList(String pemCerts) {
-        List<X509Certificate> certList = new LinkedList<X509Certificate>();
+    public static List<AaaCertificate> getCertsFromPemList(String pemCerts) {
+        List<AaaCertificate> certList = new LinkedList<AaaCertificate>();
         List<String> pemList = getPemCerts(pemCerts);
         for (String pemCert : pemList) {
             certList.add(CertificateUtils.getCertificate(pemCert));

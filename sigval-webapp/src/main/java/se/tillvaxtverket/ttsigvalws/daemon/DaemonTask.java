@@ -16,6 +16,7 @@
  */
 package se.tillvaxtverket.ttsigvalws.daemon;
 
+import com.aaasec.lib.aaacert.AaaCertificate;
 import iaik.asn1.ObjectID;
 import iaik.asn1.structures.AccessDescription;
 import iaik.x509.X509CRL;
@@ -30,11 +31,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import se.tillvaxtverket.tsltrust.common.iaik.KsCertFactory;
 import se.tillvaxtverket.tsltrust.common.utils.core.DbCrlCache;
 import se.tillvaxtverket.tsltrust.common.utils.core.DerefUrl;
 import se.tillvaxtverket.tsltrust.common.utils.general.FileOps;
 import se.tillvaxtverket.tsltrust.common.utils.general.GeneralStaticUtils;
-import se.tillvaxtverket.tsltrust.common.utils.general.KsCertFactory;
 import se.tillvaxtverket.tsltrust.common.utils.general.RootInfo;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.db.CrlCacheTable;
 
@@ -51,10 +52,10 @@ public class DaemonTask extends ServletDaemon {
     private String crlMode;
     private long idleTime;
     private List<String> rootNames;
-    private List<X509Certificate> rootCerts;
+    private List<AaaCertificate> rootCerts;
     private RootInfo rootInfo;
     private boolean initialized;
-    private Map<String, X509Certificate> rootMap;
+    private Map<String, AaaCertificate> rootMap;
     Map<String, KeyStore> keyStoreMap;
     private final File rootXmlFile;
     private final String trustCacheDirName;
@@ -150,7 +151,7 @@ public class DaemonTask extends ServletDaemon {
                 break;
             }
             //Load Root
-            X509Certificate root = rootMap.get(name);
+            X509Certificate root = KsCertFactory.getIaikCert(rootMap.get(name).getEncoded());
             log("Policy: " + name + ",  Root: " + root.getSubjectDN().getName());
 
             //Get caRepository URL from root SIA extension

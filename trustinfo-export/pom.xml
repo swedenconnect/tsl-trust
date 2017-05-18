@@ -4,7 +4,7 @@
     <parent>
         <artifactId>tsl-trust</artifactId>
         <groupId>se.elegnamnden.tsltrust</groupId>
-        <version>1.3</version>
+        <version>1.4</version>
     </parent>
 
     <artifactId>trustinfo-export</artifactId>

@@ -16,6 +16,7 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.workareas;
 
+import com.aaasec.lib.aaacert.AaaCertificate;
 import se.tillvaxtverket.tsltrust.common.html.elements.ButtonElement;
 import se.tillvaxtverket.tsltrust.common.html.elements.DivElement;
 import se.tillvaxtverket.tsltrust.common.html.elements.GenericHtmlElement;
@@ -30,7 +31,6 @@ import se.tillvaxtverket.tsltrust.common.html.elements.TextObject;
 import se.tillvaxtverket.tsltrust.common.utils.core.FnvHash;
 import se.tillvaxtverket.tsltrust.common.utils.core.PEM;
 import se.tillvaxtverket.tsltrust.common.utils.general.CertificateUtils;
-import se.tillvaxtverket.tsltrust.common.utils.general.KsCertFactory;
 import se.tillvaxtverket.tsltrust.weblogic.content.CertManagementInfoElements;
 import se.tillvaxtverket.tsltrust.weblogic.content.CertificateInformation;
 import se.tillvaxtverket.tsltrust.weblogic.content.HtmlConstants;
@@ -49,7 +49,6 @@ import se.tillvaxtverket.tsltrust.weblogic.models.SessionModel;
 import se.tillvaxtverket.tsltrust.weblogic.models.TslTrustModel;
 import se.tillvaxtverket.tsltrust.weblogic.utils.InputValidator;
 import se.tillvaxtverket.tsltrust.weblogic.utils.PolicyUtils;
-import iaik.x509.X509Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -190,7 +189,7 @@ public class PolicyManagementArea extends WorkArea implements HtmlConstants, TTC
             tm.setTableRowClasses(TABLE_SECTION_ROW_EVEN);
             InfoTableElements valPolicyElements = tm.getElements();
             CertificateInformation certInfo = new CertificateInformation(tm, session);
-            X509Certificate iAIKCert = policyUtils.getIAIKCert(parameter);
+            AaaCertificate iAIKCert = policyUtils.getIAIKCert(parameter);
             if (iAIKCert != null) {
                 tm.setElements(certInfo.getCertInfo(iAIKCert));
                 return new InfoTableFactory(tm, session).getTable().toString();
@@ -1200,7 +1199,7 @@ public class PolicyManagementArea extends WorkArea implements HtmlConstants, TTC
         String id = req.getId();
         SessionModel session = req.getSession();
         String certHash;
-        X509Certificate cert;
+       AaaCertificate cert;
         String pemCert;
 
         if (id.indexOf("Enter") > 0) {
@@ -1208,21 +1207,16 @@ public class PolicyManagementArea extends WorkArea implements HtmlConstants, TTC
         }
         if (id.indexOf("Add") > 0) {
             try {
-                cert = KsCertFactory.getIaikCert(CertificateUtils.getCertificate(session.getExtCertEntry()));
+                cert = CertificateUtils.getCertificate(session.getExtCertEntry());
             } catch (Exception ex) {
                 cert = null;
             }
             if (cert == null) {
                 return;
             }
-            try {
-                byte[] certBytes = cert.getEncoded();
-                certHash = FnvHash.getFNV1aToHex(certBytes);
-                pemCert = PEM.getPemCert(certBytes);
-            } catch (CertificateEncodingException ex) {
-                session.setExtCertEntry("This certificate has syntax error");
-                return;
-            }
+            byte[] certBytes = cert.getEncoded();
+            certHash = FnvHash.getFNV1aToHex(certBytes);
+            pemCert = PEM.getPemCert(certBytes);
             // Check for duplicates
             List<ExternalCert> externalCerts = policyDb.getExternalCerts();
             for (ExternalCert extCert : externalCerts) {
@@ -1264,7 +1258,7 @@ public class PolicyManagementArea extends WorkArea implements HtmlConstants, TTC
         }
     }
 
-    private String checkCertificate(X509Certificate cert) {
+    private String checkCertificate(AaaCertificate cert) {
         StringBuilder b = new StringBuilder();
         long currentTime = System.currentTimeMillis();
         long notBefore = cert.getNotBefore().getTime();

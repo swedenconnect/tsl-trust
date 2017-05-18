@@ -17,6 +17,7 @@
         <script type="text/javascript" src="asn1js/oids.js"></script>
         <script type="text/javascript" src="asn1js/asn1.js"></script>
         <script type="text/javascript" charset="UTF-8" src="script/certFrame.js"></script>
+        <link rel="stylesheet" type="text/css" href="script/certDisp.css">
     </head>
     <body style="padding:0px; width:99%">
         <div style="position: relative; padding-bottom: 1em;">

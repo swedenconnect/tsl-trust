@@ -16,17 +16,14 @@
  */
 package se.tillvaxtverket.tsltrust.common.utils.general;
 
-import iaik.utils.URLDecoder;
-import iaik.x509.X509Certificate;
+import com.aaasec.lib.aaacert.AaaCertificate;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -42,9 +39,9 @@ public final class RootInfo {
     private static final Logger LOG = Logger.getLogger(RootInfo.class.getName());
     private Document doc;
     private List<String> caNames;
-    private List<X509Certificate> rootCerts;
+    private List<AaaCertificate> rootCerts;
     private boolean initialized = false;
-    private Map<String, X509Certificate> rootMap;
+    private Map<String, AaaCertificate> rootMap;
     private Map<String, String> policyDescMap;
 
     public RootInfo(byte[] xmlData) {
@@ -75,8 +72,8 @@ public final class RootInfo {
     private void parseXML() {
         NodeList rootNodes = doc.getElementsByTagName("tslt:Root");
         caNames = new ArrayList<String>(rootNodes.getLength());
-        rootCerts = new ArrayList<X509Certificate>(rootNodes.getLength());
-        rootMap = new HashMap<String, X509Certificate>();
+        rootCerts = new ArrayList<AaaCertificate>(rootNodes.getLength());
+        rootMap = new HashMap<String, AaaCertificate>();
         policyDescMap = new HashMap<String, String>();
 
         for (int i = 0; i < rootNodes.getLength(); i++) {
@@ -87,14 +84,10 @@ public final class RootInfo {
                 Node node = rootElements.item(nc);
                 pName = (node.getNodeName().equals("tslt:PolicyName") ? node.getTextContent() : pName);
                 pem = (node.getNodeName().equals("tslt:RootCertificate") ? node.getTextContent() : pem);
-                try {
-                    desc = (node.getNodeName().equals("tslt:PolicyDescription") ? URLDecoder.decode(node.getTextContent()) : desc);
-                } catch (IOException ex) {
-                    LOG.log(Level.SEVERE, null, ex);
-                }
+                desc = (node.getNodeName().equals("tslt:PolicyDescription") ? URIComponentCoder.decodeURIComponent(node.getTextContent()) : desc);
             }
             if (pName.length() > 0 && pem.length() > 0) {
-                X509Certificate rootCert = CertificateUtils.getCertificate(pem);
+                AaaCertificate rootCert = CertificateUtils.getCertificate(pem);
                 if (rootCert != null) {
                     caNames.add(pName);
                     rootCerts.add(rootCert);
@@ -112,7 +105,7 @@ public final class RootInfo {
         return caNames;
     }
 
-    public List<X509Certificate> getRootCerts() {
+    public List<AaaCertificate> getRootCerts() {
         return rootCerts;
     }
 
@@ -120,11 +113,11 @@ public final class RootInfo {
         return initialized;
     }
 
-    public Map<String, X509Certificate> getRootMap() {
+    public Map<String, AaaCertificate> getRootMap() {
         return rootMap;
     }
 
-    public void setRootMap(Map<String, X509Certificate> rootMap) {
+    public void setRootMap(Map<String, AaaCertificate> rootMap) {
         this.rootMap = rootMap;
     }
 

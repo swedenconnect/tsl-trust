@@ -16,7 +16,7 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.content.ts;
 
-import iaik.x509.X509Certificate;
+import com.aaasec.lib.aaacert.AaaCertificate;
 import java.util.List;
 import se.tillvaxtverket.tsltrust.common.tsl.sie.ServiceInfoExtension;
 import se.tillvaxtverket.tsltrust.weblogic.content.*;
@@ -66,9 +66,9 @@ public class HistoricalInfo implements HtmlConstants, TTConstants {
             InfoTableSection extSect = elements.addNewSection(tm, sie.getName(), false);
             ServiceExtensioininfo.addExtensionInfo(sie, extSect, tm);
         }
-        List<X509Certificate> certs = sh.getServiceDigitalIdentityCerts();
+        List<AaaCertificate> certs = sh.getServiceDigitalIdentityCerts();
         if (!certs.isEmpty()) {
-            for (X509Certificate cert : certs) {
+            for (AaaCertificate cert : certs) {
                 try {
                     itUtil.addCertificate(elements, cert, "Service Certificate", true);
                 } catch (Exception ex) {

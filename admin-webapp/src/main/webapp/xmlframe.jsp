@@ -14,6 +14,7 @@
         <script type="text/javascript" charset="UTF-8" src="script/XMLDisplay.js"></script>
         <script type="text/javascript" charset="UTF-8" src="script/XMLFrame.js"></script>
         <link rel="stylesheet" type="text/css" href="script/XMLDisplay.css">
+        <link rel="stylesheet" type="text/css" href="script/certDisp.css">
     </head>
     <body>
         <div id="XMLHolder"><b style="color: #3b0000">Loading...</b> <img src="img/globe32.gif"/></div>

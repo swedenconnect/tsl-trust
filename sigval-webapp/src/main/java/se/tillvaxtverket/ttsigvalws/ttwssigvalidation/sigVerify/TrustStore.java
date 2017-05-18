@@ -16,6 +16,7 @@
  */
 package se.tillvaxtverket.ttsigvalws.ttwssigvalidation.sigVerify;
 
+import com.aaasec.lib.aaacert.AaaCertificate;
 import iaik.asn1.ObjectID;
 import iaik.asn1.structures.AccessDescription;
 import iaik.pkcs.PKCS7CertList;
@@ -29,9 +30,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import se.tillvaxtverket.tsltrust.common.iaik.KsCertFactory;
 import se.tillvaxtverket.tsltrust.common.utils.general.FileOps;
 import se.tillvaxtverket.tsltrust.common.utils.general.RootInfo;
-import se.tillvaxtverket.tsltrust.common.utils.general.KsCertFactory;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.config.ConfigData;
 
 /**
@@ -41,10 +42,10 @@ public final class TrustStore {
 
     private static final Logger LOG = Logger.getLogger(TrustStore.class.getName());
     private List<String> rootNames;
-    private List<X509Certificate> rootCerts;
+    private List<AaaCertificate> rootCerts;
     private RootInfo rootInfo;
     private boolean initialized;
-    private Map<String, X509Certificate> rootMap;
+    private Map<String, AaaCertificate> rootMap;
     private Map<String, String> policyDescMap;
     Map<String, KeyStore> keyStoreMap;
     private final File rootXmlFile;
@@ -52,7 +53,7 @@ public final class TrustStore {
 
     public TrustStore(ConfigData conf) {
         this.keyStoreMap = new HashMap<String, KeyStore>();
-        this.rootMap = new HashMap<String, X509Certificate>();
+        this.rootMap = new HashMap<String, AaaCertificate>();
         this.policyDescMap = new HashMap<String, String>();
 
         trustCacheDirName = FileOps.getfileNameString(conf.getDataDirectory(), "trustCache");
@@ -101,7 +102,7 @@ public final class TrustStore {
             ks = KeyStore.getInstance("jks");
             ks.load(null, null);
             //Load Root
-            X509Certificate root = rootMap.get(name);
+            X509Certificate root = KsCertFactory.getIaikCert(rootMap.get(name).getEncoded());
             ks.setCertificateEntry("Root", KsCertFactory.getCertificate(root));
 
             //Get caRepository URL from root SIA extension
@@ -132,7 +133,7 @@ public final class TrustStore {
      * Getter for validation policy root certs
      * @return A list of root certificates.
      */
-    public List<X509Certificate> getRootCerts() {
+    public List<AaaCertificate> getRootCerts() {
         return rootCerts;
     }
 
@@ -140,7 +141,7 @@ public final class TrustStore {
      * Getter for the root certificates for all validation policies
      * @return a hash map using the policy name as key holding the root certificate for each policy.
      */
-    public Map<String, X509Certificate> getRootMap() {
+    public Map<String, AaaCertificate> getRootMap() {
         return rootMap;
     }
 
@@ -178,7 +179,7 @@ public final class TrustStore {
      * @param policyName The name of the validation policy
      * @return root certificate
      */
-    public X509Certificate getRoot(String policyName) {
+    public AaaCertificate getRoot(String policyName) {
         if (initialized && rootMap.containsKey(policyName)) {
             return rootMap.get(policyName);
         } else {

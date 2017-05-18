@@ -16,47 +16,42 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.content;
 
+import com.aaasec.lib.aaacert.AaaCertificate;
+import com.aaasec.lib.aaacert.algo.PublicKeyData;
+import com.aaasec.lib.aaacert.data.SubjectAttributeInfo;
+import com.aaasec.lib.aaacert.display.DisplayCert;
+import com.aaasec.lib.aaacert.enums.OidName;
+import com.aaasec.lib.aaacert.enums.SupportedExtension;
+import com.aaasec.lib.aaacert.extension.ExtensionInfo;
+import com.aaasec.lib.aaacert.extension.QCStatementsExt;
+import com.aaasec.lib.aaacert.utils.CertUtils;
+import java.io.IOException;
 import se.tillvaxtverket.tsltrust.weblogic.models.InfoTableElement;
 import se.tillvaxtverket.tsltrust.weblogic.models.InfoTableElements;
 import se.tillvaxtverket.tsltrust.weblogic.models.InfoTableModel;
 import se.tillvaxtverket.tsltrust.weblogic.models.InfoTableSection;
 import se.tillvaxtverket.tsltrust.weblogic.models.SessionModel;
 import se.tillvaxtverket.tsltrust.weblogic.utils.ASN1Util;
-import se.tillvaxtverket.tsltrust.common.utils.general.KsCertFactory;
 import se.tillvaxtverket.tsltrust.common.html.elements.ButtonElement;
-import se.tillvaxtverket.tsltrust.common.html.elements.GenericHtmlElement;
-import se.tillvaxtverket.tsltrust.common.html.elements.HtmlElement;
-import se.tillvaxtverket.tsltrust.common.html.elements.TextObject;
 import se.tillvaxtverket.tsltrust.common.utils.core.FnvHash;
 import se.tillvaxtverket.tsltrust.common.utils.core.PEM;
-import iaik.asn1.ASN1;
-import iaik.asn1.ASN1Object;
-import iaik.asn1.CodingException;
-import iaik.asn1.ObjectID;
-import iaik.asn1.structures.GeneralName;
-import iaik.asn1.structures.GeneralNames;
-import iaik.asn1.structures.PolicyInformation;
-import iaik.x509.V3Extension;
-import iaik.x509.X509Certificate;
-import iaik.x509.extensions.BasicConstraints;
-import iaik.x509.extensions.CertificatePolicies;
-import iaik.x509.extensions.ExtendedKeyUsage;
-import iaik.x509.extensions.KeyUsage;
-import iaik.x509.extensions.SubjectAltName;
-import iaik.x509.extensions.qualified.QCStatements;
-import iaik.x509.extensions.qualified.structures.QCStatement;
-import iaik.x509.extensions.qualified.structures.QCStatementInfo;
 import java.security.PublicKey;
-import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.security.auth.x500.X500Principal;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.CertificatePolicies;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.asn1.x509.PolicyInformation;
 
 /**
  * Providing UI elements for displaying certificate information
@@ -81,16 +76,19 @@ public class CertificateInformation implements HtmlConstants, TTConstants {
     }
 
     public InfoTableElements getCertInfo(byte[] certBytes) {
-        X509Certificate iaikCert = KsCertFactory.getIaikCert(certBytes);
-        return getCertInfo(iaikCert);
+        AaaCertificate cert;
+        try {
+            cert = new AaaCertificate(certBytes);
+            return getCertInfo(cert);
+        } catch (CertificateException ex) {
+            Logger.getLogger(CertificateInformation.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(CertificateInformation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
-    public InfoTableElements getCertInfo(java.security.cert.X509Certificate cert) {
-        X509Certificate iaikCert = KsCertFactory.getIaikCert(cert);
-        return getCertInfo(iaikCert);
-    }
-
-    public InfoTableElements getCertInfo(X509Certificate cert) {
+    public InfoTableElements getCertInfo(AaaCertificate cert) {
         certElements = new InfoTableElements();
         //Make sure there is a certificate to parse
         if (cert == null) {
@@ -100,7 +98,6 @@ public class CertificateInformation implements HtmlConstants, TTConstants {
 
         //Add Subject Name
         addDistinguishedNameAttributes(cert.getSubjectX500Principal(), "Subject Name", true);
-
 
         //Add Validity period
         Date notBefore = cert.getNotBefore();
@@ -115,7 +112,7 @@ public class CertificateInformation implements HtmlConstants, TTConstants {
 
         //Add ExtensionInfo
         addCertificateExtensionInfo(cert, true);
-        addTechnicalInfoTextFrame(cert,false);
+        addTechnicalInfoTextFrame(cert, false);
         addPemInfo(cert, false);
         addASN1Inspector(cert);
 
@@ -136,47 +133,28 @@ public class CertificateInformation implements HtmlConstants, TTConstants {
         section.setSectionHeadingClasses(CERT_INFO);
         section.setFoldedElement(ASN1Util.getShortName(dn));
 
-        Iterator<Entry<ObjectID, String>> rdns = ASN1Util.getCertNameAttributeSet(dn).iterator();
-        while (rdns.hasNext()) {
-            Entry<ObjectID, String> entry = rdns.next();
-            String type = entry.getKey().getName();
-            String value = entry.getValue();
+        List<SubjectAttributeInfo> attributeInfoList = CertUtils.getAttributeInfoList(dn);
+        for (SubjectAttributeInfo attrInfo:attributeInfoList){
+            String type = attrInfo.getDispName();
+            String value = attrInfo.getValue();
             section.addNewElement(aStr(type, value), ATTR);
-        }
+            
+        }        
     }
 
-    private void addPublicKeyInfo(X509Certificate cert, boolean unfold) {
+    private void addPublicKeyInfo(AaaCertificate cert, boolean unfold) {
         InfoTableSection section = certElements.addNewSection(tm, "Public Key", unfold);
         section.setSectionHeadingClasses(CERT_INFO);
 
         PublicKey publicKey = cert.getPublicKey();
-        String algorithm = publicKey.getAlgorithm();
-        int keyBits = 0;
-        String oidStr = "";
-        String oidName = "unknown";
+        PublicKeyData pkData = new PublicKeyData(publicKey);
+        
+        
+        String algorithm = pkData.getAlgorithm();
+        int keyBits = pkData.getKeySize();
+        String oidStr = pkData.getAlgorithmOid().getId();
+        String oidName = pkData.getPkType().getName();
 
-        try {
-            ASN1 pkasn1 = new ASN1(publicKey.getEncoded());
-            ASN1Object algID = pkasn1.getComponentAt(0);
-            ASN1Object pk = pkasn1.getComponentAt(1);
-            ASN1Object algOID = algID.getComponentAt(0);
-            ObjectID oid = new ObjectID((String) algOID.getValue());
-            int keydatalen = ((byte[]) pk.getValue()).length;
-            keyBits = (keydatalen - 12) * 8;
-            if (keydatalen > 127 && keydatalen < 150) {
-                keyBits = 1024;
-            }
-            if (keydatalen > 255 && keydatalen < 280) {
-                keyBits = 2048;
-            }
-            if (keydatalen > 511 && keydatalen < 540) {
-                keyBits = 4096;
-            }
-            oidStr = oid.getID();
-            oidName = oid.getName();
-        } catch (CodingException ex) {
-            LOG.log(Level.WARNING, null, ex);
-        }
         String fold = oidName;
         section.addNewElement(aStr("Algorithm", oidName), ATTR);
         if (keyBits > 0) {
@@ -186,83 +164,73 @@ public class CertificateInformation implements HtmlConstants, TTConstants {
         section.setFoldedElement(fold);
     }
 
-    private void addCertificateExtensionInfo(X509Certificate cert, boolean unfold) {
+    private void addCertificateExtensionInfo(AaaCertificate cert, boolean unfold) {
         InfoTableSection section = certElements.addNewSection(tm, "Extensions", unfold);
         section.setSectionHeadingClasses(CERT_INFO);
         InfoTableElements extElements = section.getElements();
         extFact.clear();
-
-        Enumeration<V3Extension> e = cert.listExtensions();
-        if (e == null) {
+        
+        List<ExtensionInfo> extList = cert.getExtensionInfoList();
+        if (extList==null){
             return;
         }
 
-        List<V3Extension> extList = new ArrayList<V3Extension>();
-        while (e.hasMoreElements()) {
-            extList.add(e.nextElement());
-        }
+
         section.setFoldedElement("Extension summary (out of " + String.valueOf(extList.size()) + " total Extensions)");
         section.setKeepFoldableElement(true);
 
-        for (V3Extension rawExt : extList) {
+        for (ExtensionInfo rawExt : extList) {
             //Basic Constraints
-            if (rawExt.getObjectID().equals(BasicConstraints.oid)) {
-                BasicConstraints bc = (BasicConstraints) rawExt;
+            if (rawExt.getExtensionType().equals(SupportedExtension.basicConstraints)) {
+                BasicConstraints bc = BasicConstraints.getInstance(rawExt.getExtDataASN1());
                 extFact.add(getExtNameAndOID(rawExt), EXT_ATTR);
                 // set property
-                extFact.add("cA", String.valueOf(bc.ca()));
+                extFact.add("cA", String.valueOf(bc.isCA()));
                 extFact.addExtension(extElements);
             }
             //Key Usage
-            if (rawExt.getObjectID().equals(KeyUsage.oid)) {
-                KeyUsage ku = (KeyUsage) rawExt;
+            if (rawExt.getExtensionType().equals(SupportedExtension.keyUsage)) {
+                KeyUsage ku = KeyUsage.getInstance(rawExt.getExtDataASN1());
                 extFact.add(getExtNameAndOID(rawExt), EXT_ATTR);
-                int i = 0;
-                String[] label = new String[]{"digitalSignature", "nonRepudiation", "keyEncipherment", "dataEncipherment", "keyAgreement", "keyCertSign", "cRLSign", "encipherOnly", "decipherOnly"};
-                for (boolean usage : ku.getBooleanArray()) {
-                    if (usage) {
-                        extFact.add(label[i], "");
-                    }
-                    i++;
-                }
+                extFact.add("Usage", DisplayCert.getKeyUsageText(ku));
                 extFact.addExtension(extElements);
             }
 
             //QcStatements
-            if (rawExt.getObjectID().equals(QCStatements.oid)) {
-                QCStatements qc = (QCStatements) rawExt;
+            if (rawExt.getExtensionType().equals(SupportedExtension.qCStatements)) {
+                QCStatementsExt qc = QCStatementsExt.getInstance(rawExt.getExtDataASN1());
                 extFact.add(getExtNameAndOID(rawExt), EXT_ATTR);
                 // set property
-                QCStatement[] qCStatements = qc.getQCStatements();
-                for (QCStatement statement : qCStatements) {
-                    QCStatementInfo statementInfo = statement.getStatementInfo();
-                    extFact.add(statement.getStatementID().getName(),
-                            (statementInfo != null) ? normalized(statementInfo.toString()) : "true");
+                if (qc.isQcCompliance()){
+                    extFact.add("Qualified", "true");
+                }
+                if (qc.isQcSscd()){
+                    extFact.add("QSSCD", "true");
                 }
                 extFact.addExtension(extElements);
             }
 
 //            //EKU
-            if (rawExt.getObjectID().equals(ExtendedKeyUsage.oid)) {
-                ExtendedKeyUsage eku = (ExtendedKeyUsage) rawExt;
+            if (rawExt.getExtensionType().equals(SupportedExtension.extendedKeyUsage)) {
+                ExtendedKeyUsage eku = ExtendedKeyUsage.getInstance(rawExt.getExtDataASN1());
                 extFact.add(getExtNameAndOID(rawExt), EXT_ATTR);
                 // set property
-                ObjectID[] keyPurposeIDs = eku.getKeyPurposeIDs();
-                for (ObjectID oid : keyPurposeIDs) {
-                    extFact.add((oid.getName() != null && oid.getName().length() > 1) ? oid.getName() : oid.getID(), oid.getID());
+                KeyPurposeId[] keyPurposeIDs = eku.getUsages();
+                for (KeyPurposeId oid : keyPurposeIDs) {
+                    extFact.add(OidName.getName(oid.getId()), oid.getId());
                 }
                 extFact.addExtension(extElements);
             }
 
 //            //CertificatePolicies
-            if (rawExt.getObjectID().equals(CertificatePolicies.oid)) {
-                CertificatePolicies cp = (CertificatePolicies) rawExt;
+            if (rawExt.getExtensionType().equals(SupportedExtension.certificatePolicies)) {
+                CertificatePolicies cp = CertificatePolicies.getInstance(rawExt.getExtDataASN1());
                 extFact.add(getExtNameAndOID(rawExt), EXT_ATTR);
                 // set property
                 PolicyInformation[] policyInformation = cp.getPolicyInformation();
                 for (PolicyInformation pi : policyInformation) {
-                    ObjectID oid = pi.getPolicyIdentifier();
-                    extFact.add("Policy", oid.getNameAndID());
+                    ASN1ObjectIdentifier oid = pi.getPolicyIdentifier();
+                    extFact.add("Policy", OidName.getName(oid.getId()));
                 }
                 extFact.addExtension(extElements);
             }
@@ -280,72 +248,66 @@ public class CertificateInformation implements HtmlConstants, TTConstants {
 //             *    iPAddress                       [7]     OCTET STRING,
 //             *    registeredID                    [8]     OBJECT IDENTIFIER }
 //             */
-            if (rawExt.getObjectID().equals(SubjectAltName.oid)) {
-                SubjectAltName san = (SubjectAltName) rawExt;
+            if (rawExt.getExtensionType().equals(SupportedExtension.subjectAlternativeName)) {
+                GeneralNames san = GeneralNames.getInstance(rawExt.getExtDataASN1());
                 extFact.add(getExtNameAndOID(rawExt), EXT_ATTR);
                 // set property
                 String[] nameType = new String[]{"otherName", "rfc822Name", "dNSName", "x400Address", "directoryName", "ediPartyName", "uniformResourceIdentifier", "iPAddress", "registeredID"};
-                GeneralNames generalNames = san.getGeneralNames();
-                Enumeration<GeneralName> names = generalNames.getNames();
-                while (names.hasMoreElements()) {
-                    GeneralName name = names.nextElement();
-                    int type = name.getType();
+                GeneralName[] generalNames = san.getNames();
+                for (GeneralName name:generalNames){
+                    int type = name.getTagNo();
                     if (type == 1 || type == 2 || type == 6 || type == 7) {
                         extFact.add(nameType[type], name.getName().toString());
-                    }
+                    }                    
                 }
                 extFact.addExtension(extElements);
             }
         }
     }
 
-    private void addTechnicalInfoTextFrame(X509Certificate cert, boolean unfold) {
+    private void addTechnicalInfoTextFrame(AaaCertificate cert, boolean unfold) {
         InfoTableSection section = certElements.addNewSection(tm, "Technical Info", unfold);
         section.setSectionHeadingClasses(CERT_INFO);
         section.setFoldedElement("Certificate details information");
-        HtmlElement certificateDetails = new GenericHtmlElement("textarea");
-        certificateDetails.addAttribute("readonly", "readonly");
-        certificateDetails.addAttribute("cols", "70");
-        certificateDetails.addAttribute("rows", "40");
-        certificateDetails.addHtmlElement(new TextObject(cert.toString(true)));
-        section.addNewElement(certificateDetails.toString());
+        
+//        HtmlElement certificateDetails = new GenericHtmlElement("textarea");
+//        certificateDetails.addAttribute("readonly", "readonly");
+//        certificateDetails.addAttribute("cols", "70");
+//        certificateDetails.addAttribute("rows", "40");
+//        certificateDetails.addHtmlElement(new TextObject(cert.toString(true)));
+        section.addNewElement(cert.toHtml(false));
     }
 
-    private void addPemInfo(X509Certificate cert, boolean unfold) {
+    private void addPemInfo(AaaCertificate cert, boolean unfold) {
         InfoTableSection section = certElements.addNewSection(tm, "PEM encoded", unfold);
         section.setSectionHeadingClasses(CERT_INFO);
         section.setFoldedElement("Base64 encoded certificate");
 
         String pemCert = "Encode error";
-        try {
-            pemCert = PEM.getPemCert(cert.getEncoded(), "<br />");
-            section.addNewElement(aStr(pemCert), aStr(CODE_TEXT));
-        } catch (CertificateEncodingException ex) {
-            Logger.getLogger(CertificateInformation.class.getName()).log(Level.WARNING, null, ex);
-        }
+        pemCert = PEM.getPemCert(cert.getEncoded(), "<br />");
+        section.addNewElement(aStr(pemCert), aStr(CODE_TEXT));
     }
 
-    private void addASN1Inspector(X509Certificate cert) {
+    private void addASN1Inspector(AaaCertificate cert) {
 
         InfoTableSection section = certElements.addNewSection(tm, "ASN.1");
         section.setSectionHeadingClasses(CERT_INFO);
-
 
         try {
             String certHash = FnvHash.getFNV1aToHex(cert.getEncoded());
             session.addPemCert(cert);
             ButtonElement certButton = new ButtonElement("Inspect Certificate ASN.1", ONCLICK, FRAME_LOAD_FUNCTION, new String[]{
-                        "index.jsp",
-                        VIEW_BUTTON,
-                        "cert" + certHash});
+                "index.jsp",
+                VIEW_BUTTON,
+                "cert" + certHash});
             section.addNewElement(aStr(certButton.toString()), aStr(CODE_TEXT));
         } catch (Exception ex) {
         }
     }
 
-    public String[] getExtNameAndOID(V3Extension rawExt) {
-        String iD = rawExt.getObjectID().getID();
-        String name = rawExt.getObjectID().getName();
+    public String[] getExtNameAndOID(ExtensionInfo rawExt) {
+        String iD = rawExt.getOid().getId();
+        String name = rawExt.getExtensionType().getName();
         boolean critical = rawExt.isCritical();
         name = (name != null && name.length() > 0) ? name : iD;
         return new String[]{name, (critical) ? "Critical" : "Non-Critical"};

@@ -1,0 +1,64 @@
+.cert-table {
+    table-layout: fixed;
+}
+.cert-table-head{
+    margin-bottom: 0;
+    padding-bottom: 0;        
+}
+.certTableHead{
+    background-color: #921e12;
+    color: #f9f9f9;
+    font-size: large;
+    font-weight: bolder;
+}
+
+td.certTableParam {
+    font-weight: bolder;
+    min-width: 130px;
+    color: lightslategray;
+    vertical-align:top;
+}
+td.cerTableValue {
+    word-wrap: break-word;
+}
+td.cerTableExtValue {
+    word-wrap: break-word;    
+}
+td.certTableExtHead{
+    font-weight: bolder;
+    color: #f9f9f9;
+}
+.certTableExtHeadRow {
+    padding: 15px;
+    background-color: #777;
+}
+.certTableExtParam {
+    color: #921e12;
+    font-weight: bold;
+    vertical-align:top;
+}
+.certTableExtSubParam{
+    padding-left: 10px;
+    color: #0a4b3e;
+    vertical-align:top;
+}
+.cerTableExtSubValue{
+    color: lightslategray;
+}
+.cerTableMonospaceVal{
+    font-family: monospace;
+}
+.subjectDNRow{
+    
+}
+.subjectDNParam{
+    padding-right: 20px;
+    color: #921e12;
+}
+.subjectDNVal{
+    padding-right: 20px;    
+}
+.subjectDNTable{
+/*    width: 100%;*/
+    background-color: #f0f0f0;
+}

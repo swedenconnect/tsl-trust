@@ -4,7 +4,7 @@
     <parent>
         <artifactId>tsl-trust</artifactId>
         <groupId>se.elegnamnden.tsltrust</groupId>
-        <version>1.3</version>
+        <version>1.4</version>
     </parent>
 
     <artifactId>sigval-webapp</artifactId>
@@ -42,7 +42,12 @@
             <artifactId>commons-fileupload</artifactId>
             <version>1.2.2</version>
         </dependency>
-        <!--        <dependency>
+        <dependency>
+            <groupId>at.iaik.jce</groupId>
+            <artifactId>iaik-jce-full</artifactId>
+            <version>4.0</version>
+            <scope>provided</scope>
+        </dependency>        <!--        <dependency>
             <groupId>org.swinglabs</groupId>
             <artifactId>swing-layout</artifactId>
         </dependency>-->

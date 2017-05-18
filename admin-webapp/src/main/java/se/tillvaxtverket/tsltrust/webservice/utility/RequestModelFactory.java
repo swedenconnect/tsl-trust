@@ -23,10 +23,10 @@ import java.util.Map;
 import se.tillvaxtverket.tsltrust.weblogic.models.RequestModel;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import se.tillvaxtverket.tsltrust.common.utils.general.URIComponentCoder;
 import se.tillvaxtverket.tsltrust.weblogic.models.SessionModel;
 import se.tillvaxtverket.tsltrust.weblogic.models.TslTrustModel;
 import se.tillvaxtverket.tsltrust.weblogic.utils.InputValidator;
-import iaik.utils.URLDecoder;
 import se.tillvaxtverket.tsltrust.weblogic.content.TTConstants;
 import se.tillvaxtverket.tsltrust.webservice.userauth.AuthData;
 import se.tillvaxtverket.tsltrust.webservice.userauth.AuthenticationHandler;
@@ -74,7 +74,7 @@ public class RequestModelFactory implements TTConstants{
         reqModel.setAction((action != null) ? InputValidator.filter(action, InputValidator.Rule.TEXT_LABEL) : "");
         reqModel.setId((id != null) ? InputValidator.filter(id, InputValidator.Rule.TEXT_LABEL) : "");
         try {
-            reqModel.setParameter(URLDecoder.decode(parameter));
+            reqModel.setParameter(URIComponentCoder.decodeURIComponent(parameter));
         } catch (Exception ex) {
             reqModel.setParameter("");
         }

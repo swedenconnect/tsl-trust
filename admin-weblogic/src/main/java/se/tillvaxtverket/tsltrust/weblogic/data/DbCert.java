@@ -16,9 +16,9 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.data;
 
+import com.aaasec.lib.aaacert.AaaCertificate;
 import se.tillvaxtverket.tsltrust.common.utils.core.PEM;
 import se.tillvaxtverket.tsltrust.common.utils.general.CertificateUtils;
-import iaik.x509.X509Certificate;
 import java.security.cert.CertificateEncodingException;
 
 /**
@@ -31,7 +31,7 @@ public final class DbCert {
     private String pemCert;
     private int revoked = 0;
     private long revDate = 0;
-    private X509Certificate certificate;
+    private AaaCertificate certificate;
 
     public DbCert() {
         serial = 0;
@@ -48,7 +48,7 @@ public final class DbCert {
         }
     }
 
-    public DbCert(X509Certificate certificate) {
+    public DbCert(AaaCertificate certificate) {
         setCertificate(certificate);
         if (certificate != null) {
             serial = certificate.getSerialNumber().longValue();
@@ -90,18 +90,13 @@ public final class DbCert {
         this.serial = serial;
     }
 
-    public X509Certificate getCertificate() {
+    public AaaCertificate getCertificate() {
         return certificate;
     }
 
-    public void setCertificate(X509Certificate certificate) {
+    public void setCertificate(AaaCertificate certificate) {
         this.certificate = certificate;
-        try {
-            pemCert = PEM.getPemCert(certificate.getEncoded());
-        } catch (CertificateEncodingException ex) {
-            certificate = null;
-            pemCert = "";
-        }
+        pemCert = PEM.getPemCert(certificate.getEncoded());
     }
     
 }

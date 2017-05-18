@@ -19,10 +19,10 @@ package se.tillvaxtverket.tsltrust.weblogic.db;
 /**
  * SQLite database utility for access to certification authority databases
  */
+import com.aaasec.lib.aaacert.AaaCertificate;
 import se.tillvaxtverket.tsltrust.weblogic.data.DbCALog;
 import se.tillvaxtverket.tsltrust.weblogic.data.DbCAParam;
 import se.tillvaxtverket.tsltrust.weblogic.data.DbCert;
-import iaik.x509.X509Certificate;
 import java.io.File;
 import java.util.logging.Logger;
 import java.sql.*;
@@ -97,7 +97,7 @@ public class CaSQLiteUtil {
         LOG.info("DB table for CA at" + caDir + " created");
     }
 
-    public static void addCertificate(X509Certificate cert, String caDir) {
+    public static void addCertificate(AaaCertificate cert, String caDir) {
         if (isCaDirInvalid(caDir)) {
             return;
         }

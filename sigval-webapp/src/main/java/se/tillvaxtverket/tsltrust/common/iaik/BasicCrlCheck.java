@@ -34,7 +34,6 @@ import se.tillvaxtverket.tsltrust.common.utils.core.FnvHash;
 import se.tillvaxtverket.tsltrust.common.utils.general.Constants;
 import se.tillvaxtverket.tsltrust.common.utils.general.FileOps;
 import se.tillvaxtverket.tsltrust.common.utils.general.GeneralStaticUtils;
-import se.tillvaxtverket.tsltrust.common.utils.general.KsCertFactory;
 
 /**
  * CRL checking functions for the root TSL

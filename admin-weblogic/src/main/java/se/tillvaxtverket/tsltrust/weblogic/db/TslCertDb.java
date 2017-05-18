@@ -16,15 +16,14 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.db;
 
+import com.aaasec.lib.aaacert.AaaCertificate;
 import se.tillvaxtverket.tsltrust.weblogic.data.TslCertificates;
 import se.tillvaxtverket.tsltrust.weblogic.data.TslMetaData;
 import se.tillvaxtverket.tsltrust.common.utils.core.Base64Coder;
 import se.tillvaxtverket.tsltrust.common.utils.core.FnvHash;
 import se.tillvaxtverket.tsltrust.common.utils.general.CertificateUtils;
-import se.tillvaxtverket.tsltrust.common.utils.general.KsCertFactory;
 import java.math.BigInteger;
 import java.security.MessageDigest;
-import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,7 +63,7 @@ public abstract class TslCertDb {
                 for (TrustService ts : tsp.getTrustServices()) {
                     try {
                         byte[] cert = ts.getServiceDigitalIdentityData();
-                        X509Certificate x509Cert = KsCertFactory.getIaikCert(cert);
+                        AaaCertificate x509Cert = new AaaCertificate(cert);
                         String certHash = FnvHash.getFNV1aToHex(cert);
                         //String tslCertID = certHash + ts.getType().trim();
                         BigInteger tslCertID = FnvHash.getFNV1a(certHash + ts.getType().trim() + ts.getName().trim());

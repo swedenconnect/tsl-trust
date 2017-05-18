@@ -16,10 +16,10 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.utils;
 
+import com.aaasec.lib.aaacert.AaaCertificate;
 import se.tillvaxtverket.tsltrust.common.utils.general.Constants;
 import se.tillvaxtverket.tsltrust.common.utils.general.FileOps;
 import se.tillvaxtverket.tsltrust.common.utils.general.GeneralStaticUtils;
-import iaik.x509.X509Certificate;
 import java.io.File;
 import java.util.List;
 
@@ -123,9 +123,9 @@ public class LotlSigCert implements Constants {
         pemCert = b.toString();
     };
 
-    public static List<X509Certificate> getCertificates(String dataLocation) {
+    public static List<AaaCertificate> getCertificates(String dataLocation) {
         String lotlSigCertLocation = dataLocation + "cfg/lotlSigCert.pem";
-        List<X509Certificate> cert = null;
+        List<AaaCertificate> cert = null;
 
         File certFile = new File(lotlSigCertLocation);
         if (certFile.canRead()) {

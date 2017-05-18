@@ -16,22 +16,21 @@
  */
 package se.tillvaxtverket.tsltrust.webservice.daemon.ca;
 
+import com.aaasec.lib.aaacert.AaaCertificate;
+import com.aaasec.lib.aaacert.CertFactory;
+import com.aaasec.lib.aaacert.data.CertRequestModel;
+import com.aaasec.lib.aaacert.enums.OidName;
+import com.aaasec.lib.aaacert.enums.SubjectDnType;
+import com.aaasec.lib.aaacert.extension.missing.SubjectInformationAccess;
+import com.aaasec.lib.aaacert.utils.CertReqUtils;
+import com.aaasec.lib.aaacert.utils.CertUtils;
 import se.tillvaxtverket.tsltrust.common.utils.core.FnvHash;
 import se.tillvaxtverket.tsltrust.weblogic.data.DbCAParam;
 import se.tillvaxtverket.tsltrust.weblogic.db.CaSQLiteUtil;
 import se.tillvaxtverket.tsltrust.weblogic.models.TslTrustModel;
-import iaik.asn1.ObjectID;
-import iaik.asn1.structures.AlgorithmID;
-import iaik.asn1.structures.Name;
-import iaik.asn1.structures.PolicyInformation;
-import iaik.x509.V3Extension;
-import iaik.x509.X509Certificate;
-import iaik.x509.extensions.BasicConstraints;
-import iaik.x509.extensions.CertificatePolicies;
-import iaik.x509.extensions.KeyUsage;
-import iaik.x509.extensions.SubjectKeyIdentifier;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -40,13 +39,29 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import iaik.asn1.structures.AccessDescription;
-import iaik.asn1.structures.GeneralName;
-import iaik.x509.extensions.SubjectInfoAccess;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.CertificatePolicies;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.asn1.x509.PolicyInformation;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
+import org.bouncycastle.cert.X509ExtensionUtils;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import se.tillvaxtverket.tsltrust.common.utils.general.FileOps;
 import se.tillvaxtverket.tsltrust.weblogic.models.TslTrustConfig;
 
@@ -149,11 +164,17 @@ public class RootCAFactory implements CaKeyStoreConstants {
             ca_rsa = generateKeyPair("RSA", CA_KEYLENGTH);
             // Now create the certificates
 
-            Name rootIssuer;
-            rootIssuer = new Name();
-            rootIssuer.addRDN(ObjectID.country, conf.getCaCountry());
-            rootIssuer.addRDN(ObjectID.organization, conf.getCaOrganizationName());
-            rootIssuer.addRDN(ObjectID.organizationalUnit, conf.getCaOrgUnitName());
+            //CertRequestModel reqMod = new CertRequestModel();
+            Map<SubjectDnType, String> subjNameMap = new HashMap<>();
+            subjNameMap.put(SubjectDnType.country, conf.getCaCountry());
+            subjNameMap.put(SubjectDnType.orgnaizationName, conf.getCaOrganizationName());
+            subjNameMap.put(SubjectDnType.orgnaizationalUnitName, conf.getCaOrgUnitName());
+
+//            Name rootIssuer;
+//            rootIssuer = new Name();
+//            rootIssuer.addRDN(ObjectID.country, conf.getCaCountry());
+//            rootIssuer.addRDN(ObjectID.organization, conf.getCaOrganizationName());
+//            rootIssuer.addRDN(ObjectID.organizationalUnit, conf.getCaOrgUnitName());
             String modelName = conf.getCaCommonName();
             int idx = modelName.indexOf("####");
             String cName;
@@ -162,34 +183,25 @@ public class RootCAFactory implements CaKeyStoreConstants {
             } else {
                 cName = caName + " " + modelName;
             }
-            rootIssuer.addRDN(ObjectID.commonName, cName);
+            subjNameMap.put(SubjectDnType.cn, cName);
+            X500Name subjectAndIssuer = CertReqUtils.getDn(subjNameMap);
 
-
-            V3Extension[] extensions = new V3Extension[4];
-            extensions[0] = new BasicConstraints(true);
-            extensions[1] = new KeyUsage(KeyUsage.keyCertSign | KeyUsage.cRLSign | KeyUsage.digitalSignature);
-
-            extensions[2] = getAnyCertificatePolicies();
+//            rootIssuer.addRDN(ObjectID.commonName, cName);
+            List<Extension> extList = new ArrayList<>();
+            extList.add(new Extension(Extension.basicConstraints, false, new BasicConstraints(true).getEncoded("DER")));
+            extList.add(new Extension(Extension.keyUsage, false, new KeyUsage(KeyUsage.keyCertSign | KeyUsage.cRLSign | KeyUsage.digitalSignature).getEncoded("DER")));
+            extList.add(new Extension(Extension.certificatePolicies, false, getAnyCertificatePolicies().getEncoded("DER")));
 
             GeneralName generalName = new GeneralName(GeneralName.uniformResourceIdentifier, caRepSia);
-            AccessDescription accessDesc = new AccessDescription(ObjectID.caRepository, generalName);
-            extensions[3] = new SubjectInfoAccess(accessDesc);
-
+            SubjectInformationAccess sia = new SubjectInformationAccess(SubjectInformationAccess.caRepository, generalName);
+            extList.add(new Extension(Extension.subjectInfoAccess, false, sia.getEncoded("DER")));
 
             //
             // create self signed CA cert
             //
-            X509Certificate caRoot = null;
-            X509Certificate[] chain = new X509Certificate[1];
-            // for verifying the created certificates
-
-            System.out.println("create self signed RSA CA certificate...");
-            caRoot = createRootCertificate(rootIssuer, ca_rsa.getPublic(),
-                    ca_rsa.getPrivate(), AlgorithmID.sha256WithRSAEncryption, extensions);
-            // verify the self signed certificate
-            caRoot.verify();
+            AaaCertificate caRoot = createRootCertificate(subjectAndIssuer, ca_rsa.getPublic(), ca_rsa.getPrivate(), CertFactory.SHA256WITHRSA, extList);
             // set the CA cert as trusted root
-            chain[0] = caRoot;
+            X509Certificate[] chain = new X509Certificate[]{caRoot.getCert()};
             addToKeyStore(ca_rsa, chain, ROOT);
             //System.out.println(caRoot.toString());
             //rootIssuer.removeRDN(ObjectID.commonName);
@@ -199,47 +211,63 @@ public class RootCAFactory implements CaKeyStoreConstants {
         }
     }
 
-    private static X509Certificate createRootCertificate(Name subjectIssuer, PublicKey publicKey,
-            PrivateKey privateKey, AlgorithmID algorithm, V3Extension[] extensions) {
+    private static AaaCertificate createRootCertificate(X500Name subjectIssuer, PublicKey publicKey,
+            PrivateKey privateKey, String algorithm, List<Extension> extensions) throws OperatorCreationException, IOException, CertificateException {
 
-        // create a new certificate
-        X509Certificate cert = new X509Certificate();
+        CertRequestModel reqMod = new CertRequestModel();
+        reqMod.setSubjectDN(subjectIssuer);
+        reqMod.setIssuerDN(subjectIssuer);
+        reqMod.setSerialNumber(BigInteger.ONE);
+        reqMod.setPublicKey(publicKey);
+        
+        //Add Signer
+        ContentSigner rooSigner = new JcaContentSignerBuilder(algorithm).build(privateKey);
+        reqMod.setSigner(rooSigner);
 
-        try {
-            // set the values
-            cert.setSerialNumber(new BigInteger("1"));  //new BigInteger(20, new Random())
-            cert.setSubjectDN(subjectIssuer);
-            cert.setPublicKey(publicKey);
-            cert.setIssuerDN(subjectIssuer);
+        // ensure that EE certs are in the validity period of CA certs
+        GregorianCalendar notBefore = new GregorianCalendar();
+        GregorianCalendar notAfter = new GregorianCalendar();
+        notBefore.add(Calendar.YEAR, -2);
+        notAfter.add(Calendar.YEAR, 5);
+        reqMod.setNotBefore(notBefore.getTime());
+        reqMod.setNotAfter(notAfter.getTime());
 
-            GregorianCalendar date = new GregorianCalendar();
+        X509ExtensionUtils extUtil = CertUtils.getX509ExtensionUtils();
+        SubjectKeyIdentifier ski = extUtil.createSubjectKeyIdentifier(CertUtils.getPublicKeyInfo(publicKey));
+        extensions.add(new Extension(Extension.subjectKeyIdentifier, false, ski.getEncoded("DER")));
 
-            // ensure that EE certs are in the validity period of CA certs
-            // not before two years ago
-            date.add(Calendar.YEAR, -2);
-            cert.setValidNotBefore(date.getTime());
-            date.add(Calendar.YEAR, 5);
-            cert.setValidNotAfter(date.getTime());
-            if (extensions != null) {
-                for (int i = 0; i < extensions.length; i++) {
-                    cert.addExtension(extensions[i]);
-                }
-            }
-            cert.addExtension(new SubjectKeyIdentifier(publicKey));
-            // and sign the certificate
-            cert.sign(algorithm, privateKey);
-        } catch (Exception ex) {
-            LOG.warning("Error creating the certificate: " + ex.getMessage());
-            return null;
-        }
+        reqMod.setExtensionList(extensions);
+
+        AaaCertificate cert = new AaaCertificate(reqMod);
         return cert;
     }
 
     /**
      * Add the private key and the certificate chain to the key store.
+     *
+     * @param keyPair
+     * @param chain
+     * @param alias
+     * @throws java.security.KeyStoreException
      */
     public static void addToKeyStore(KeyPair keyPair, X509Certificate[] chain, String alias) throws KeyStoreException {
         key_store.setKeyEntry(alias, keyPair.getPrivate(), KS_PASSWORD, chain);
+    }
+
+    /**
+     * Add the private key and the certificate chain to the key store.
+     *
+     * @param keyPair
+     * @param chain
+     * @param alias
+     * @throws java.security.KeyStoreException
+     */
+    public static void addToKeyStore(KeyPair keyPair, AaaCertificate[] chain, String alias) throws KeyStoreException {
+        List<X509Certificate> certList = new ArrayList<>();
+        for (AaaCertificate acert : chain) {
+            certList.add(acert.getCert());
+        }
+        key_store.setKeyEntry(alias, keyPair.getPrivate(), KS_PASSWORD, certList.toArray(new X509Certificate[]{}));
     }
 
     private static void saveKeyStore() {
@@ -254,7 +282,7 @@ public class RootCAFactory implements CaKeyStoreConstants {
     }
 
     private static CertificatePolicies getAnyCertificatePolicies() {
-        PolicyInformation policyInformation = new PolicyInformation(ObjectID.anyPolicy, null);
+        PolicyInformation policyInformation = new PolicyInformation(new ASN1ObjectIdentifier(OidName.cp_anyPolicy.getOid()), null);
         CertificatePolicies certificatePolicies = new CertificatePolicies(new PolicyInformation[]{policyInformation});
         return certificatePolicies;
     }

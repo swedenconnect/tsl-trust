@@ -20,7 +20,7 @@ import iaik.x509.X509Certificate;
 import java.util.Calendar;
 import java.util.List;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import se.tillvaxtverket.tsltrust.common.utils.general.KsCertFactory;
+import se.tillvaxtverket.tsltrust.common.iaik.KsCertFactory;
 
 /**
  * Data class holding signature validation context parameters

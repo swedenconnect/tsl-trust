@@ -16,7 +16,7 @@
  */
 package se.tillvaxtverket.tsltrust.common.tsl;
 
-import iaik.x509.X509Certificate;
+import com.aaasec.lib.aaacert.AaaCertificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -36,9 +36,9 @@ import se.tillvaxtverket.tsltrust.common.tsl.sie.ServiceInfoExtension;
 public class TrustService {
 
     private TSPServiceType ts;
-    private List<X509Certificate> sdiCertList;
+    private List<AaaCertificate> sdiCertList;
     private byte[] sdiCertData;
-    private X509Certificate sdiCert;
+    private AaaCertificate sdiCert;
     private List<ServiceHistoryInstance> serviceHistoryList;
     private List<ServiceInfoExtension> siExtensions;
 
@@ -50,14 +50,14 @@ public class TrustService {
     }
 
     private void getCerts() {
-        sdiCertList = new ArrayList<X509Certificate>();
+        sdiCertList = new ArrayList<AaaCertificate>();
         sdiCertData = null;
         sdiCert = null;
         try {
             DigitalIdentityListType sdi = ts.getServiceInformation().getServiceDigitalIdentity();
             List<byte[]> digitalIdentityties = TslUtils.getDigitalIdentityties(sdi);
             for (byte[] certData : digitalIdentityties) {
-                X509Certificate cert = TslUtils.getServiceDigitalIdentityCert(certData);
+                AaaCertificate cert = TslUtils.getServiceDigitalIdentityCert(certData);
                 sdiCertList.add(cert);
             }
             if (!sdiCertList.isEmpty()) {
@@ -96,11 +96,11 @@ public class TrustService {
         return sdiCertData;
     }
 
-    public X509Certificate getServiceDigitalIdentityCert() {
+    public AaaCertificate getServiceDigitalIdentityCert() {
         return sdiCert;
     }
 
-    public List<X509Certificate> getServiceDigitalIdentityCerts() {
+    public List<AaaCertificate> getServiceDigitalIdentityCerts() {
         return sdiCertList;
     }
 

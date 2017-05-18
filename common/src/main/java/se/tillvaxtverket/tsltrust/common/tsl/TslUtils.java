@@ -16,7 +16,7 @@
  */
 package se.tillvaxtverket.tsltrust.common.tsl;
 
-import iaik.x509.X509Certificate;
+import com.aaasec.lib.aaacert.AaaCertificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -110,7 +110,7 @@ public final class TslUtils {
         return certDataList;
     }
 
-    public static X509Certificate getServiceDigitalIdentityCert(byte[] certData) {
+    public static AaaCertificate getServiceDigitalIdentityCert(byte[] certData) {
         if (certData == null) {
             return null;
         }

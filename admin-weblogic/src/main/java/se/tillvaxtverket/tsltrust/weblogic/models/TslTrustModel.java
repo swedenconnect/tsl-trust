@@ -16,6 +16,7 @@
  */
 package se.tillvaxtverket.tsltrust.weblogic.models;
 
+import com.aaasec.lib.aaacert.AaaCertificate;
 import se.tillvaxtverket.tsltrust.common.jsonobjects.DiscoveryData.DisplayNameData;
 import se.tillvaxtverket.tsltrust.common.utils.core.DerefUrl;
 import se.tillvaxtverket.tsltrust.common.utils.general.FileOps;
@@ -25,7 +26,6 @@ import se.tillvaxtverket.tsltrust.weblogic.db.TslCertDb;
 import se.tillvaxtverket.tsltrust.weblogic.db.TslCertDbSqlite;
 import se.tillvaxtverket.tsltrust.weblogic.content.TTConstants;
 import se.tillvaxtverket.tsltrust.weblogic.db.ValPoliciesDbUtil;
-import iaik.x509.X509Certificate;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -58,7 +58,7 @@ public class TslTrustModel implements TTConstants {
     private ValPoliciesDbUtil policyDb;
     private String mode, dataLocation;
     private int tslRefreshDelay;
-    private List<X509Certificate> lotlSigCerts;
+    private List<AaaCertificate> lotlSigCerts;
     private boolean validLotl = true;
     private Gson gson = new Gson();
     private List<DiscoveryData> discoData;
@@ -135,11 +135,11 @@ public class TslTrustModel implements TTConstants {
         return tslRefreshDelay;
     }
 
-    public List<X509Certificate> getLotlSigCerts() {
+    public List<AaaCertificate> getLotlSigCerts() {
         return lotlSigCerts;
     }
 
-    public void setLotlSigCerts(List<X509Certificate> lotlSigCert) {
+    public void setLotlSigCerts(List<AaaCertificate> lotlSigCert) {
         this.lotlSigCerts = lotlSigCert;
     }
 

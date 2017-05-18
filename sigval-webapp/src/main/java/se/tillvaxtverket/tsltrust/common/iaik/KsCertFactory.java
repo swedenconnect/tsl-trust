@@ -14,7 +14,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.tillvaxtverket.tsltrust.common.utils.general;
+package se.tillvaxtverket.tsltrust.common.iaik;
 
 import iaik.x509.X509Certificate;
 import java.io.ByteArrayInputStream;

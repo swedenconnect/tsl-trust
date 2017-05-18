@@ -16,6 +16,8 @@
  */
 package se.tillvaxtverket.tsltrust.webservice.daemon.ca;
 
+import com.aaasec.lib.aaacert.AaaCertificate;
+import com.aaasec.lib.aaacert.utils.CertUtils;
 import se.tillvaxtverket.tsltrust.common.utils.core.FnvHash;
 import se.tillvaxtverket.tsltrust.common.utils.general.CertificateUtils;
 import se.tillvaxtverket.tsltrust.common.utils.general.FileOps;
@@ -30,10 +32,8 @@ import se.tillvaxtverket.tsltrust.weblogic.db.TslCertDb;
 import se.tillvaxtverket.tsltrust.weblogic.db.ValPoliciesDbUtil;
 import se.tillvaxtverket.tsltrust.weblogic.models.TslTrustModel;
 import se.tillvaxtverket.tsltrust.weblogic.utils.PolicyUtils;
-import iaik.pkcs.PKCS7CertList;
-import iaik.pkcs.PKCSException;
-import iaik.x509.X509Certificate;
 import java.io.File;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,12 +44,14 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
+import org.bouncycastle.cms.CMSException;
 import se.tillvaxtverket.tsltrust.weblogic.data.ConsoleLogRecord;
 import se.tillvaxtverket.tsltrust.weblogic.models.TslTrustConfig;
 import se.tillvaxtverket.tsltrust.webservice.daemon.ContextParameters;
 
 /**
- * This class determines which trust services that are compliant with the policies defined in the TSL Trust administration web service  
+ * This class determines which trust services that are compliant with the
+ * policies defined in the TSL Trust administration web service
  */
 public class CertAuthOperations implements WebXmlConstants {
 
@@ -60,7 +62,7 @@ public class CertAuthOperations implements WebXmlConstants {
     private final TslCertDb tslCertDb;
     private final LogDbUtil logDb;
     private final PolicyUtils policyUtils;
-    private Map<String, Map<BigInteger, X509Certificate>> tslCertsMap = new HashMap<String, Map<BigInteger, X509Certificate>>();
+    private Map<String, Map<BigInteger, AaaCertificate>> tslCertsMap = new HashMap<String, Map<BigInteger, AaaCertificate>>();
     private Map<String, String> caDirectories = new HashMap<String, String>();
     ;
     private List<ValidationPolicy> validationPolicies;
@@ -119,10 +121,10 @@ public class CertAuthOperations implements WebXmlConstants {
         // Get compliant certs
         for (ValidationPolicy vp : validationPolicies) {
             if (vp.getStatus().equals(ValidationPolicy.ENABLE_STATE)) {
-                Map<BigInteger, X509Certificate> policyCertMap = new HashMap<BigInteger, X509Certificate>();
+                Map<BigInteger, AaaCertificate> policyCertMap = new HashMap<BigInteger, AaaCertificate>();
                 List<TslCertificates> policyCompliantCerts = policyUtils.getPolicyCompliantCerts(vp);
                 for (TslCertificates tc : policyCompliantCerts) {
-                    X509Certificate cert = CertificateUtils.getCertificate(tc.getTslCertificate());
+                    AaaCertificate cert = CertificateUtils.getCertificate(tc.getTslCertificate());
                     if (cert != null) {
                         policyCertMap.put(key(cert.getPublicKey().getEncoded()), cert);
                     }
@@ -131,7 +133,7 @@ public class CertAuthOperations implements WebXmlConstants {
                 for (ExternalCert extCert : externalCerts) {
                     String certId = extCert.getCertificateId();
                     if (addCertIds.contains(certId)) {
-                        X509Certificate cert = extCert.getCert();
+                        AaaCertificate cert = extCert.getCert();
                         if (cert != null) {
                             BigInteger pkID = key(cert.getPublicKey().getEncoded());
                             if (!policyCertMap.containsKey(pkID)) {
@@ -225,12 +227,12 @@ public class CertAuthOperations implements WebXmlConstants {
             if (vp.getStatus().equals(ValidationPolicy.ENABLE_STATE)) {
                 int count = 0;
                 String pName = vp.getPolicyName();
-                Map<BigInteger, X509Certificate> policyCertMap = tslCertsMap.get(pName);
+                Map<BigInteger, AaaCertificate> policyCertMap = tslCertsMap.get(pName);
                 CertificationAuthority ca = caMap.get(pName);
                 String caDir = caDirectories.get(pName);
                 List<DbCert> dbCertificates = CaSQLiteUtil.getCertificates(caDir, false);
                 for (DbCert dbCert : dbCertificates) {
-                    X509Certificate cert = dbCert.getCertificate();
+                    AaaCertificate cert = dbCert.getCertificate();
                     BigInteger dbPkId = key(cert.getPublicKey().getEncoded());
                     if (!policyCertMap.containsKey(dbPkId)) {
                         //issued certificates is not in the list of policycompliant certs. Revoke
@@ -253,7 +255,7 @@ public class CertAuthOperations implements WebXmlConstants {
             if (vp.getStatus().equals(ValidationPolicy.ENABLE_STATE)) {
                 int count = 0;
                 String pName = vp.getPolicyName();
-                Map<BigInteger, X509Certificate> policyCertMap = tslCertsMap.get(pName);
+                Map<BigInteger, AaaCertificate> policyCertMap = tslCertsMap.get(pName);
                 CertificationAuthority ca = caMap.get(pName);
                 String caDir = caDirectories.get(pName);
                 List<DbCert> dbCertificates = CaSQLiteUtil.getCertificates(caDir, false);
@@ -261,9 +263,13 @@ public class CertAuthOperations implements WebXmlConstants {
                 Set<BigInteger> policyCertIdSet = policyCertMap.keySet();
                 for (BigInteger certId : policyCertIdSet) {
                     if (!issuedCertIdList.contains(certId)) {
-                        //Certificate is missing. Issue certificates
-                        ca.issueXCert(policyCertMap.get(certId));
-                        count++;
+                        try {
+                            //Certificate is missing. Issue certificates
+                            ca.issueXCert(policyCertMap.get(certId));
+                            count++;
+                        } catch (IOException ex) {
+                            Logger.getLogger(CertAuthOperations.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
                 }
                 if (count > 0) {
@@ -277,7 +283,7 @@ public class CertAuthOperations implements WebXmlConstants {
     private List<BigInteger> getIssuedCertIDs(List<DbCert> dbCertificates) {
         List<BigInteger> dbCertIDs = new LinkedList<BigInteger>();
         for (DbCert dbCert : dbCertificates) {
-            X509Certificate cert = dbCert.getCertificate();
+            AaaCertificate cert = dbCert.getCertificate();
             BigInteger certId = key(cert.getPublicKey().getEncoded());
             dbCertIDs.add(certId);
         }
@@ -286,22 +292,23 @@ public class CertAuthOperations implements WebXmlConstants {
 
     private void exportCerts(CertificationAuthority ca) {
         List<DbCert> isssueList = ca.getAllCertificates(false);
-        X509Certificate[] certificates = new X509Certificate[isssueList.size()];
+        List<AaaCertificate> certList = new ArrayList<>();
+//        AaaCertificate[] certificates = new AaaCertificate[isssueList.size()];
         for (int i = 0; i < isssueList.size(); i++) {
             DbCert dbCert = isssueList.get(i);
-            certificates[i] = dbCert.getCertificate();
-        }
-        PKCS7CertList pkcs7 = new PKCS7CertList();
-        pkcs7.setCertificateList(certificates);
-        File localCertFile = new File(ca.getCaDir(), ca.getCaID() + ".p7b");
-        File exportCertFile = new File(FileOps.getfileNameString(conf.getCaFileStorageLocation(), "certs"), ca.getCaID() + ".p7b");
-        try {
-            FileOps.saveByteFile(pkcs7.toByteArray(), localCertFile);
-            FileOps.saveByteFile(pkcs7.toByteArray(), exportCertFile);
-        } catch (PKCSException ex) {
-            LOG.log(Level.WARNING, null, ex);
+            certList.add(dbCert.getCertificate());
+//            certificates[i] = dbCert.getCertificate();
         }
 
+        try {
+            byte[] pkcs7 = CertUtils.getPKCS7(certList);
+            File localCertFile = new File(ca.getCaDir(), ca.getCaID() + ".p7b");
+            File exportCertFile = new File(FileOps.getfileNameString(conf.getCaFileStorageLocation(), "certs"), ca.getCaID() + ".p7b");
+            FileOps.saveByteFile(pkcs7, localCertFile);
+            FileOps.saveByteFile(pkcs7, exportCertFile);
+        } catch (CMSException | IOException ex) {
+            LOG.log(Level.WARNING, null, ex);
+        }
     }
 
     private void publishRootXMLFile() {
