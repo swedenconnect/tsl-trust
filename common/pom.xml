@@ -16,6 +16,13 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <netbeans.hint.license>tillvaxtverket-tsltrust</netbeans.hint.license>
     </properties>
+    <repositories>
+        <repository>
+          <id>central</id>
+          <name>libs-release</name>
+          <url>https://maven.eidastest.se/artifactory/libs-release</url>
+        </repository>
+    </repositories>
     <build>
         <plugins>
             <plugin>
