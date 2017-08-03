@@ -74,7 +74,7 @@ public class RequestModelFactory implements TTConstants{
         reqModel.setAction((action != null) ? InputValidator.filter(action, InputValidator.Rule.TEXT_LABEL) : "");
         reqModel.setId((id != null) ? InputValidator.filter(id, InputValidator.Rule.TEXT_LABEL) : "");
         try {
-            reqModel.setParameter(URIComponentCoder.decodeURIComponent(parameter));
+            reqModel.setParameter(parameter);
         } catch (Exception ex) {
             reqModel.setParameter("");
         }
