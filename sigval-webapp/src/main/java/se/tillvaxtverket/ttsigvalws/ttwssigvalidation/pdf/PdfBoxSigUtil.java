@@ -265,7 +265,6 @@ public class PdfBoxSigUtil {
      */
     private static ASN1EncodableVector getIssuerAndSerial(Certificate sigCert) throws CertificateEncodingException, IOException {
         ASN1EncodableVector issuerAndSerial = new ASN1EncodableVector();
-        ASN1EncodableVector generalNames = new ASN1EncodableVector();
         ASN1InputStream ain = new ASN1InputStream(sigCert.getEncoded());
         ASN1Sequence certSeq = (ASN1Sequence) ain.readObject();
         ASN1Sequence tbsSeq = (ASN1Sequence) certSeq.getObjectAt(0);
@@ -280,8 +279,7 @@ public class PdfBoxSigUtil {
 
         ASN1Sequence issuerDn = (ASN1Sequence) tbsSeq.getObjectAt(counter);
         //Return the issuer field
-        generalNames.add(issuerDn);
-        issuerAndSerial.add(new DERSequence(generalNames));
+        issuerAndSerial.add(issuerDn);
         issuerAndSerial.add(serial);
 
         return issuerAndSerial;
