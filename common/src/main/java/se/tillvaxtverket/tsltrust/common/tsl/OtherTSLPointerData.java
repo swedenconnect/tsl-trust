@@ -1,25 +1,27 @@
 /*
  * Copyright 2017 Swedish E-identification Board (E-legitimationsnämnden)
- *  		 
+ *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- * 
+ *
  *     This program is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU General Public License for more details.
- * 
+ *
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package se.tillvaxtverket.tsltrust.common.tsl;
 
 import com.aaasec.lib.aaacert.AaaCertificate;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.etsi.uri.x02231.v2.AdditionalInformationType;
 import org.etsi.uri.x02231.v2.AnyType;
 import org.etsi.uri.x02231.v2.DigitalIdentityListType;
@@ -44,10 +46,10 @@ public class OtherTSLPointerData {
     private OtherTSLPointerType otp;
     private boolean mrTslPointer = false;
     private boolean mimeTypePresent = false;
-    private String tslType="";
-    private String schemeTerritory="";
-    private String mimeType="";
-    private String tSLLocation="";
+    private String tslType = "";
+    private String schemeTerritory = "";
+    private String mimeType = "";
+    private String tSLLocation = "";
     private InternationalNamesType schemeOperatorName;
     private NonEmptyURIListType SchemeTypeCommunityRules;
     private List<AaaCertificate> otpCertificates = new ArrayList<AaaCertificate>();
@@ -62,23 +64,8 @@ public class OtherTSLPointerData {
 
     private void parseOtherTSLPointer() {
 
-        //Attempt to derive certificates
-        try {
-            DigitalIdentityListType[] sdiList = otp.getServiceDigitalIdentities().getServiceDigitalIdentityArray();
-            for (DigitalIdentityListType sdi : sdiList) {
-                DigitalIdentityType[] digitalIdList = sdi.getDigitalIdArray();
-                for (DigitalIdentityType digId : digitalIdList) {
-                    byte[] cert = digId.getX509Certificate();
-                    AaaCertificate aCert = new AaaCertificate(cert);
-                    if (aCert != null) {
-                        otpCertificates.add(aCert);
-                    }
-                }
-            }
-        } catch (Exception ex) {
-        }
         //Get TSL location and additional information
-        AdditionalInformationType addInfo=null;
+        AdditionalInformationType addInfo = null;
         try {
             // Get TSL Location URL;
             tSLLocation = otp.getTSLLocation();
@@ -119,6 +106,26 @@ public class OtherTSLPointerData {
 
         } catch (Exception ex) {
         }
+        //Attempt to derive certificates
+        try {
+            DigitalIdentityListType[] sdiList = otp.getServiceDigitalIdentities().getServiceDigitalIdentityArray();
+            for (DigitalIdentityListType sdi : sdiList) {
+                DigitalIdentityType[] digitalIdList = sdi.getDigitalIdArray();
+                for (DigitalIdentityType digId : digitalIdList) {
+                    byte[] cert = digId.getX509Certificate();
+                    try {
+                        AaaCertificate aCert = new AaaCertificate(cert);
+                        if (aCert != null) {
+                            otpCertificates.add(aCert);
+                        }
+                    } catch (Exception ignored) {
+                        //This is not an error. It just means that the digital identity was not a cert
+                    }
+                }
+            }
+        } catch (Exception ex) {
+        }
+
     }
 
     public NonEmptyURIListType getSchemeTypeCommunityRules() {

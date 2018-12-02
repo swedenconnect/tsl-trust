@@ -4,7 +4,7 @@
     <parent>
         <groupId>se.elegnamnden.tsltrust</groupId>
         <artifactId>tsl-trust</artifactId>
-        <version>1.4</version>
+        <version>1.5</version>
     </parent>
     <artifactId>admin-weblogic</artifactId>
     <packaging>jar</packaging>
@@ -21,17 +21,19 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>3.6.2.Final</version>
+            <version>3.6.10.Final</version>
         </dependency>
+<!--
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate</artifactId>
-            <version>3.2.5.ga</version>
+            <version>3.5.4-Final</version>
         </dependency>
+-->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
-            <version>3.3.2.GA</version>
+            <version>3.6.10.Final</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>

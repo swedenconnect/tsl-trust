@@ -1,4 +1,5 @@
-var baseUrl = "TThtml?action=";
+var servletUrl = "TThtml";
+var baseUrl = servletUrl+"?action=";
 var tr;
 var repeatTime=5000;
 var repeatId;
@@ -124,7 +125,23 @@ function executeSelected(target, id, selectGrp, size){
 
 function sendInputField (target, id, inputFieldId){
     var data = $("#"+inputFieldId).val();
-    loadHtml(target, "loadElement&id="+id+"&parameter="+encodeURIComponent(data));    
+    var seed=Math.floor(Math.random()*100000001);
+    
+    $.ajax({
+        type: 'POST',
+        url: servletUrl,
+        data: {
+            'action': 'loadElement',
+            'container': target,
+            'winheight' : getHeightParamVal(),
+            'nonce' : seed,
+            'id': id,
+            'parameter':data
+        },
+        dataType: 'html'
+    }).done(function (data) {
+        $("#"+target).html(data);
+    });
 }
 
 function foldUnfold(hideElement, showElement,table){
@@ -159,5 +176,8 @@ function devLogout(){
 }
 
 function getHeight(){
-    return "&winheight="+$(window).height();
+    return "&winheight="+getHeightParamVal();
+}
+function getHeightParamVal(){
+    return $(window).height();
 }
