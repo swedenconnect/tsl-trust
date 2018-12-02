@@ -62,7 +62,7 @@ public abstract class HibernateUtil {
     /**
      * Get Hibernate session
      * @return Hibernate Session
-     * @throws IOException 
+     * @throws HibernateException
      */
     public abstract SessionFactory getSessionFactory() throws HibernateException;
 

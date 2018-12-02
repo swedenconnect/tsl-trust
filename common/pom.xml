@@ -5,7 +5,7 @@
     <parent>
         <artifactId>tsl-trust</artifactId>
         <groupId>se.elegnamnden.tsltrust</groupId>
-        <version>1.4</version>
+        <version>1.5</version>
     </parent>
     <name>TSL Trust - Common</name>
     <artifactId>common</artifactId>
@@ -84,7 +84,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-ext-jdk15on</artifactId>
-            <version>1.54</version>
+            <version>1.60</version>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -113,7 +113,7 @@
         <dependency>
             <groupId>com.aaasec.lib</groupId>
             <artifactId>aaacert</artifactId>
-            <version>1.0</version>
+            <version>1.0.1</version>
         </dependency>
     </dependencies>
 </project>
