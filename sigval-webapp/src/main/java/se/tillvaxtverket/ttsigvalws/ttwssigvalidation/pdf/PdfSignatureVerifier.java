@@ -191,7 +191,8 @@ public class PdfSignatureVerifier {
             getPkParams(sigResult.getCert().getPublicKey(), sigResult);
             DigestAlgorithm signerInfoHashAlgo = DigestAlgorithm.getDigestAlgoFromOid(signer.getDigestAlgOID());
             sigResult.setDigestAlgo(signerInfoHashAlgo);
-            SupportedSigAlgoritm sigAlgoFromSignerInfoAndCert = SupportedSigAlgoritm.getAlgoFromTypeAndHash(signerInfoHashAlgo, sigResult.getPkType());
+            String encryptionAlgOID = signer.getEncryptionAlgOID();
+            SupportedSigAlgoritm sigAlgoFromSignerInfoAndCert = SupportedSigAlgoritm.getAlgoFromOidAndHash(new ASN1ObjectIdentifier(encryptionAlgOID), signerInfoHashAlgo);
             sigResult.setSigAlgo(sigAlgoFromSignerInfoAndCert);
             Attribute cmsAlgoProtAttr = signer.getSignedAttributes().get(new ASN1ObjectIdentifier(PdfObjectIds.ID_AA_CMS_ALGORITHM_PROTECTION));
             getCMSAlgoritmProtectionData(cmsAlgoProtAttr, sigResult);
@@ -503,27 +504,17 @@ public class PdfSignatureVerifier {
             sigResult.setCmsapDigestAlgo(digestAlgo);
 
             //GetSigAlgo
-            int objIdx = 1;
-            if (cmsapSeq.size() > 1) {
-                while (cmsapSeq.getObjectAt(objIdx) instanceof ASN1TaggedObject) {
-                    ASN1TaggedObject taggedObj = ASN1TaggedObject.getInstance(cmsapSeq.getObjectAt(objIdx));
+            for (int objIdx = 1; objIdx < cmsapSeq.size(); objIdx++){
+                ASN1Encodable asn1Encodable = cmsapSeq.getObjectAt(objIdx);
+                if (asn1Encodable instanceof ASN1TaggedObject) {
+                    ASN1TaggedObject taggedObj = ASN1TaggedObject.getInstance(asn1Encodable);
                     if (taggedObj.getTagNo() == 1) {
                         AlgorithmIdentifier algoId = AlgorithmIdentifier.getInstance(taggedObj, false);
-                        //Attempt to treat the algo OID as a signature algoritm OID. Typical for ECC
-                        SupportedSigAlgoritm sigAlgo = SupportedSigAlgoritm.getAlgoFromOid(algoId.getAlgorithm());
-                        if (sigAlgo == null) {
-                            //Attemt to treat algo declaration as just PK algo declaration. Typical for RSA.
-                            PublicKeyType pubKeyAlgo = PublicKeyType.getTypeFromOid(algoId.getAlgorithm().getId());
-                            if (pubKeyAlgo != null) {
-                                sigAlgo = SupportedSigAlgoritm.getAlgoFromTypeAndHash(digestAlgo, pubKeyAlgo);
-                            }
-                        }
+                        SupportedSigAlgoritm sigAlgo = SupportedSigAlgoritm.getAlgoFromOidAndHash(algoId.getAlgorithm(), digestAlgo);
                         sigResult.setCmsapSigAlgo(sigAlgo);
                     }
-                    objIdx++;
                 }
             }
-
         } catch (Exception e) {
             LOG.warning("Failed to parse CMSAlgoritmProtection algoritms");
         }
