@@ -16,7 +16,10 @@
  */
 package se.tillvaxtverket.ttsigvalws.ttwssigvalidation.sigVerify;
 
-import iaik.asn1.ObjectID;
+import com.aaasec.lib.crypto.xml.SigVerifyResult;
+import com.aaasec.lib.crypto.xml.XMLSign;
+import com.aaasec.lib.crypto.xml.XmlBeansUtil;
+import com.aaasec.lib.crypto.xml.XmlUtils;
 import iaik.x509.X509Certificate;
 import iaik.x509.extensions.qualified.QCStatements;
 import iaik.x509.extensions.qualified.structures.QCStatement;
@@ -24,10 +27,15 @@ import iaik.x509.extensions.qualified.structures.etsi.QcEuCompliance;
 import iaik.x509.extensions.qualified.structures.etsi.QcEuSSCD;
 import java.security.KeyStore;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.xmlbeans.XmlException;
+import org.apache.xmlbeans.XmlObject;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.util.encoders.Base64;
 import org.w3.x2000.x09.xmldsig.SignatureDocument;
 import org.w3.x2000.x09.xmldsig.SignatureType;
 import org.w3.x2000.x09.xmldsig.SignedInfoType;
@@ -35,8 +43,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import se.tillvaxtverket.tsltrust.common.iaik.KsCertFactory;
 import se.tillvaxtverket.tsltrust.common.utils.general.Algorithms;
-import se.tillvaxtverket.tsltrust.common.xmldsig.SigVerifyResult;
-import se.tillvaxtverket.tsltrust.common.xmldsig.XMLSign;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.models.SigValidationBaseModel;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.models.SigValidationModel;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.sigVerify.context.SignatureValidationContext;
@@ -73,7 +79,7 @@ public class XmlSigVerifier extends SigVerifier {
         byte[] signedData = model.getSigDocument().getDocBytes();
         Document signedDoc = null;
         try {
-            signedDoc = XMLSign.getDoc(signedData);
+            signedDoc = XmlUtils.getDocument(signedData);
         } catch (Exception ex) {
             Logger.getLogger(XmlSigVerifier.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -92,13 +98,15 @@ public class XmlSigVerifier extends SigVerifier {
             svc.setRevision(-1);
             svc.setRevisions(-1);
 
-            String sigAlgOid = getSigAlgOid(result.thisSignatureNode);
+            String sigAlgName = getSigAlgXmlName(result.thisSignatureNode);
+            String sigAlgOid = getSigAlgOid(sigAlgName);
             if (sigAlgOid == null) {
                 svc.setSigValidationError(new String[]{"Unknown algorithm"});
             }
 
             svc.setSignaturePkAlgOID(null);
             svc.setSignatureAlgOID(new ASN1ObjectIdentifier(sigAlgOid));
+            svc.setSignatureHashAlgOID(getHash(sigAlgName));
             svc.setTimestamped(false);
             TimeStampContext tsCont = null;
             svc.setTstContext(tsCont);
@@ -136,7 +144,17 @@ public class XmlSigVerifier extends SigVerifier {
         }
     }
 
-    private void qcComplianceTest(SignatureValidationContext svc) {
+  private ASN1ObjectIdentifier getHash(String sigAlgName) {
+    try {
+        HashMap<String, String> algoHashMap = Algorithms.xmlHashOids;
+        String hashOid = algoHashMap.get(sigAlgName);
+        return new ASN1ObjectIdentifier(hashOid);
+    } catch (Exception ex) {
+      return null;
+    }
+  }
+
+  private void qcComplianceTest(SignatureValidationContext svc) {
         svc.setQualifiedCertificate(false);
         svc.setSscd(false);
         try {
@@ -159,18 +177,27 @@ public class XmlSigVerifier extends SigVerifier {
         return textBundle.getString("signature") + " " + String.valueOf(sigIndex + 1);
     }
 
-    private String getSigAlgOid(Node sigNode) {
+    private String getSigAlgOid(String algorithm) {
+        try {
+            return Algorithms.xmlAlgIds.get(algorithm);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private String getSigAlgXmlName(Node sigNode) {
         String sigAlgOid;
         try {
             SignatureType sig = SignatureDocument.Factory.parse(sigNode).getSignature();
             SignedInfoType signedInfo = sig.getSignedInfo();
             String algorithm = signedInfo.getSignatureMethod().getAlgorithm();
-            sigAlgOid = Algorithms.xmlAlgIds.get(algorithm);
+            return algorithm;
         } catch (Exception ex) {
             return null;
         }
-        return sigAlgOid;
     }
+
+
 
     private List<X509Certificate> getCertList(SigVerifyResult.IndivdualSignatureResult result) {
         List<X509Certificate> certList = new ArrayList<X509Certificate>();

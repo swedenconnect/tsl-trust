@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.aaasec.lib.crypto.xml.SigVerifyResult;
 import org.apache.commons.io.FileUtils;
 import org.etsi.uri.x02231.v2.DigitalIdentityListType;
 import org.etsi.uri.x02231.v2.DigitalIdentityType;
@@ -53,7 +55,6 @@ import se.tillvaxtverket.tsltrust.common.utils.core.FnvHash;
 import se.tillvaxtverket.tsltrust.common.utils.general.CertificateUtils;
 import se.tillvaxtverket.tsltrust.common.utils.general.EuropeCountry;
 import se.tillvaxtverket.tsltrust.common.utils.general.FileOps;
-import se.tillvaxtverket.tsltrust.common.xmldsig.SigVerifyResult;
 import se.tillvaxtverket.tsltrust.weblogic.content.TTConstants;
 import se.tillvaxtverket.tsltrust.weblogic.data.ConsoleLogRecord;
 import se.tillvaxtverket.tsltrust.weblogic.data.TslMetaData;

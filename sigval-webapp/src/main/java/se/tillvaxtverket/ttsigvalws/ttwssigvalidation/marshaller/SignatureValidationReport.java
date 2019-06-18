@@ -355,7 +355,7 @@ public class SignatureValidationReport implements SigreportConstants {
     /**
      * Adding signer certificate information to the signature validation report
      *
-     * @param svt The object holding the data for the signature validation
+     * @param certParent The object holding the data for the signature validation
      * report
      * @param cc The verification context
      */

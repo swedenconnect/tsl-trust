@@ -24,7 +24,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import javax.xml.parsers.ParserConfigurationException;
+
+import com.aaasec.lib.crypto.xml.SigVerifyResult;
+import com.aaasec.lib.crypto.xml.XMLSign;
+import com.aaasec.lib.crypto.xml.XmlUtils;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.xml.security.utils.XMLUtils;
 import org.etsi.uri.x02231.v2.InternationalNamesType;
 import org.etsi.uri.x02231.v2.MultiLangNormStringType;
 import org.etsi.uri.x02231.v2.MultiLangStringType;
@@ -35,9 +40,6 @@ import org.etsi.uri.x02231.v2.TSPType;
 import org.etsi.uri.x02231.v2.TrustServiceProviderListType;
 import org.etsi.uri.x02231.v2.TrustStatusListType;
 import org.xml.sax.SAXException;
-import se.tillvaxtverket.tsltrust.common.xmldsig.SigVerifyResult;
-import se.tillvaxtverket.tsltrust.common.xmldsig.XMLSign;
-import se.tillvaxtverket.tsltrust.common.xmldsig.XMLSign.XmlSigData;
 
 /**
  * Java object for XML parsing trust service status lists
@@ -157,7 +159,7 @@ public class TrustServiceList {
      */
     public boolean hasSignature() {
         try {
-            XmlSigData signatureData = XMLSign.getSignatureData(XMLSign.getDoc(tslBytes));
+            XMLSign.XmlSigData signatureData = XMLSign.getSignatureData(XmlUtils.getDocument(tslBytes));
             return (signatureData.sigType != null);
         } catch (Exception ex) {
             return false;

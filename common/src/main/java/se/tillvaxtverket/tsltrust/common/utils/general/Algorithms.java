@@ -16,6 +16,8 @@
  */
 package se.tillvaxtverket.tsltrust.common.utils.general;
 
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+
 import java.util.HashMap;
 
 /**
@@ -46,11 +48,22 @@ public class Algorithms {
     /**
      * Mapping XML signature algorithm identifiers to corresponding OIDs 
      */
-    public static final HashMap<String, String> xmlAlgIds = new HashMap<String, String>();
+    public static final HashMap<String, String> xmlAlgIds = new HashMap<>();
+    /**
+     * Mapping XML signature algorithm identifiers to corresponding Hash OIDs
+     */
+    public static final HashMap<String, String> xmlHashOids = new HashMap<>();
     /**
      * Mapping supported signature algorithm OID to algorithm names 
      */
     public static final HashMap<String, String> supportedSigAlgs = new HashMap<String, String>();
+
+    public static final String RSASSA_PSS_SHA1 = "http://www.w3.org/2007/05/xmldsig-more#sha1-rsa-MGF1";
+    public static final String RSASSA_PSS_SHA224 = "http://www.w3.org/2007/05/xmldsig-more#sha224-rsa-MGF1";
+    public static final String RSASSA_PSS_SHA256 = "http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1";
+    public static final String RSASSA_PSS_SHA384 = "http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1";
+    public static final String RSASSA_PSS_SHA512 = "http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1";
+
 
     static {
         digestNames.put("1.2.840.113549.2.5", "MD5");
@@ -144,7 +157,27 @@ public class Algorithms {
         xmlAlgIds.put("http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha1", "1.2.840.10045.4.1");
         xmlAlgIds.put("http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha224", "1.2.840.10045.4.3.1");
         xmlAlgIds.put("http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256", "1.2.840.10045.4.3.2");
-        
+        xmlAlgIds.put(RSASSA_PSS_SHA1, PKCSObjectIdentifiers.id_RSASSA_PSS.getId());
+        xmlAlgIds.put(RSASSA_PSS_SHA224, PKCSObjectIdentifiers.id_RSASSA_PSS.getId());
+        xmlAlgIds.put(RSASSA_PSS_SHA256, PKCSObjectIdentifiers.id_RSASSA_PSS.getId());
+        xmlAlgIds.put(RSASSA_PSS_SHA384, PKCSObjectIdentifiers.id_RSASSA_PSS.getId());
+        xmlAlgIds.put(RSASSA_PSS_SHA512, PKCSObjectIdentifiers.id_RSASSA_PSS.getId());
+
+        xmlHashOids.put("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256", allowedDigests.get("SHA256"));
+        xmlHashOids.put("http://www.w3.org/2001/04/xmldsig-more#rsa-md5", allowedDigests.get("MD5"));
+        xmlHashOids.put("http://www.w3.org/2000/09/xmldsig#rsa-sha1", allowedDigests.get("SHA1"));
+        xmlHashOids.put("http://www.w3.org/2001/04/xmldsig-more#rsa-sha384", allowedDigests.get("SHA384"));
+        xmlHashOids.put("http://www.w3.org/2001/04/xmldsig-more#rsa-sha512", allowedDigests.get("SHA512"));
+        xmlHashOids.put("http://www.w3.org/2000/09/xmldsig#dsa-sha1", allowedDigests.get("SHA1"));
+        xmlHashOids.put("http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha1", allowedDigests.get("SHA1"));
+        xmlHashOids.put("http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha224", allowedDigests.get("SHA224"));
+        xmlHashOids.put("http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256",allowedDigests.get("SHA256"));
+        xmlHashOids.put(RSASSA_PSS_SHA1, allowedDigests.get("SHA1"));
+        xmlHashOids.put(RSASSA_PSS_SHA224, allowedDigests.get("SHA224"));
+        xmlHashOids.put(RSASSA_PSS_SHA256,allowedDigests.get("SHA256"));
+        xmlHashOids.put(RSASSA_PSS_SHA384, allowedDigests.get("SHA384"));
+        xmlHashOids.put(RSASSA_PSS_SHA512, allowedDigests.get("SHA512"));
+
         supportedSigAlgs.put("1.2.840.113549.1.1.5", "RSA with SHA1");
         supportedSigAlgs.put("1.2.840.113549.1.1.11", "RSA with SHA256");
         
