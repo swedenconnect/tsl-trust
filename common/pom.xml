@@ -118,7 +118,6 @@
         <dependency>
             <groupId>com.aaasec.lib</groupId>
             <artifactId>aaacert</artifactId>
-            <version>1.0.1</version>
         </dependency>
     </dependencies>
 </project>
