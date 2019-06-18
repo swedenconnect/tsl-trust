@@ -5,7 +5,7 @@
     <parent>
         <artifactId>tsl-trust</artifactId>
         <groupId>se.elegnamnden.tsltrust</groupId>
-        <version>1.5</version>
+        <version>1.6</version>
     </parent>
     <name>TSL Trust - Common</name>
     <artifactId>common</artifactId>
