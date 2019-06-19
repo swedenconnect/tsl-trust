@@ -5,7 +5,7 @@
     <parent>
         <artifactId>tsl-trust</artifactId>
         <groupId>se.elegnamnden.tsltrust</groupId>
-        <version>1.5</version>
+        <version>1.6</version>
     </parent>
     <name>TSL Trust - Common</name>
     <artifactId>common</artifactId>
@@ -45,6 +45,11 @@
         </plugins>
     </build>
     <dependencies>
+        <dependency>
+            <groupId>com.aaasec.lib</groupId>
+            <artifactId>aaacrypto</artifactId>
+            <version>1.0.3</version>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -113,7 +118,6 @@
         <dependency>
             <groupId>com.aaasec.lib</groupId>
             <artifactId>aaacert</artifactId>
-            <version>1.0.1</version>
         </dependency>
     </dependencies>
 </project>

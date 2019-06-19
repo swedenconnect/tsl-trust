@@ -16,6 +16,7 @@
  */
 package se.tillvaxtverket.tsltrust.common.iaik;
 
+import com.aaasec.lib.crypto.xml.XmlBeansUtil;
 import iaik.asn1.ASN1Object;
 import iaik.asn1.ObjectID;
 import iaik.asn1.SEQUENCE;
@@ -29,7 +30,6 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.apache.xmlbeans.XmlException;
 import se.elegnamnden.id.authCont.x10.saci.SAMLAuthContextDocument;
-import se.tillvaxtverket.tsltrust.common.xmldsig.XmlBeansUtil;
 
 /**
  *
