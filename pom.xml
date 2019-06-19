@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>se.elegnamnden.tsltrust</groupId>
     <artifactId>tsl-trust</artifactId>
-    <version>1.6</version>
+    <version>1.6.1-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>TSL Trust Project 1.5</name>
+    <name>TSL Trust Project</name>
     <modules>
         <module>common</module>
         <module>admin-webapp</module>
