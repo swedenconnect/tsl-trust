@@ -16,11 +16,13 @@
  */
 package se.tillvaxtverket.tsltrust.webservice;
 
+import org.apache.xml.security.algorithms.JCEMapper;
 import se.tillvaxtverket.tsltrust.webservice.utility.RequestModelFactory;
 import com.google.gson.Gson;
 import se.tillvaxtverket.tsltrust.weblogic.models.RequestModel;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.Provider;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -65,8 +67,10 @@ public class HtmlProvider extends HttpServlet {
      */
     @Override
     public void init(ServletConfig config) throws ServletException {
-        //        this.context = config.getServletContext();
-        Security.addProvider(new BouncyCastleProvider());
+        // Remove any occurance of the BC provider
+        Security.removeProvider("BC");
+        // Insert the BC provider in a preferred position
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
 
         sessionMap = new HashMap<BigInteger, SessionModel>();
         day = 1000 * 60 * 60 * 24;

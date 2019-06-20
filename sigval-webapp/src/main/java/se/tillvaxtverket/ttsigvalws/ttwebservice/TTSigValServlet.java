@@ -42,6 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import se.tillvaxtverket.tsltrust.common.utils.core.Base64Coder;
 import se.tillvaxtverket.tsltrust.common.utils.general.FilenameFilterImpl;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.config.ConfigData;
@@ -68,8 +69,10 @@ public class TTSigValServlet extends HttpServlet {
     @Override
     public void init(ServletConfig config) throws ServletException {
         this.context = config.getServletContext();
+        // Remove any occurance of the BC provider
         Security.removeProvider("BC");
-        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+        // Insert the BC provider in a preferred position
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
         try {
             SecurityManager secMan = new SecurityManager();
             secMan.checkSetFactory();
