@@ -4,7 +4,7 @@
     <parent>
         <groupId>se.elegnamnden.tsltrust</groupId>
         <artifactId>tsl-trust</artifactId>
-        <version>1.6.1</version>
+        <version>1.6.2-SNAPSHOT</version>
     </parent>
     <artifactId>admin-weblogic</artifactId>
     <packaging>jar</packaging>
