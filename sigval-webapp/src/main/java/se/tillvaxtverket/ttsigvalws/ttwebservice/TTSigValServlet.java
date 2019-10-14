@@ -474,9 +474,13 @@ public class TTSigValServlet extends HttpServlet {
                     long sizeInBytes = item.getSize();
                     uploadedFile = new File(storageDir, fileName);
                     try {
+                        if (uploadedFile.exists()){
+                            uploadedFile.delete();
+                        }
                         item.write(uploadedFile);
                         uploaded = true;
                     } catch (Exception ex) {
+                      ex.printStackTrace();
                     }
                 }
 
