@@ -1,7 +1,7 @@
 <%-- 
     Document   : index
     Created on : Aug 4, 2011, 10:33:51 PM
-    Author     : Tillväxtverket
+    Author     : Tillvï¿½xtverket
 --%>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -23,12 +23,12 @@
     <body>
         <div class="top" style="min-height: 90px">
             <div class="rightTop">
-                <a  class="image" href="http://www.tillvaxtverket.se/"><img src="img/tillvaxtverket.png" width="120" alt="Tillväxtverket"/></a>            
+                <a  class="image" href="https://sandbox.swedenconnect.se/home/index.html"><img src="img/sweden-connect.svg" height="50" alt="Sweden Connect"/></a>
             </div>
             <div class="centerTop">
                 <h1>Signature validation using TSL Trust</h1>
             </div>
-            <p><strong class ="colored">Test login through Testbädden för Eid 2.0</strong></p>
+            <p><strong class ="colored">Test login through Testbï¿½dden fï¿½r Eid 2.0</strong></p>
         </div>
 
         <div class="inpbar" style="min-height: 20px">
@@ -57,9 +57,9 @@
                 <tbody>
                     <tr><td colspan="2"><u><Strong class="colored">Related resources and links</Strong></u></td></tr>
                     <tr><td><a href="https://ttadmin.konki.se/login/">Tsl Trust Admin Service</a></td>
-                        <td class="prop">Log on to TSL Trust policy administration (Test SP för Eid 2.0)</td></tr>
+                        <td class="prop">Log on to TSL Trust policy administration (Test SP fï¿½r Eid 2.0)</td></tr>
                     <tr><td><a href="https://docs.eid2.se/">docs.eid2.se</a></td>
-                        <td class="prop">Information about testbädden för Eid 2.0</td></tr>
+                        <td class="prop">Information about testbï¿½dden fï¿½r Eid 2.0</td></tr>
                     <tr><td><a href="dslogin.html">Discovery Service Login</a></td>
                         <td class="prop">Use the Discovery Service for selecting identity provider (Requires a logged out user)</td></tr>
                     <tr><td><a href="https://eid2.3xasecurity.com/docs/DeploymentEid2.pdf">DeploymentEid2.pdf</a></td>
@@ -75,7 +75,7 @@
             </table>            
         </div>
         <div style="margin-top: 10px;background-color: #ffffff">
-            <p>This web application is implemented with "testbädden för Eid 2.0" using the following architecture:</p>
+            <p>This web application is implemented with "testbï¿½dden fï¿½r Eid 2.0" using the following architecture:</p>
             <a style="margin-left: 30px"class="image" href="https://eid2.3xasecurity.com/docs/DeploymentEid2.pdf"><img src="img/eid2SpService.png" width="600" alt="3xA Security"/></a>                
         </div>
 

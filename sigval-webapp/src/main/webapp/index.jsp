@@ -1,7 +1,7 @@
 <%-- 
     Document   : index
     Created on : May 1, 2012, 10:33:51 PM
-    Author     : Tillväxtverket
+    Author     : Tillvï¿½xtverket
 --%>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -21,7 +21,7 @@
     <body>
         <div class="top">
             <div class="rightTop">
-                <a  class="image" href="http://www.tillvaxtverket.se/"><img src="img/tillvaxtverket.png" width="120" alt="Tillväxtverket"/></a>            
+                <a  class="image" href="https://sandbox.swedenconnect.se/home/index.html"><img src="img/sweden-connect.svg" height="50" alt="Sweden Connect"/></a>
             </div>
             <div class="centerTop">
                 <h1>Signature validation using TSL Trust</h1>
@@ -39,8 +39,8 @@
         </div>
 
         <p>This is a test service for verifying signed PDF and XML documents using the TSL Trust signature validation model.
-            TSL Trust is developed by the Swedish agency for regional and economic 
-            growth (<a href="http://www.tillvaxtverket.se/">Tillväxtverket</a>).
+            This service is deployed as a test service within the Sweden Connect sandbox infrastrukture for test and development ( <a
+                    href="https://sandbox.swedenconnect.se/home/index.html">https://sandbox.swedenconnect.se/home/index.html</a>).
             For more information about this service see (<a href="about.jsp">About the sample TSL Trust Signature Validation Service</a>)</p>
 
         <div style="float:right;width: 40%">

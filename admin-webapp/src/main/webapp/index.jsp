@@ -16,7 +16,7 @@
     </head>
     <body>
         <div class="rightTop">
-            <a  class="image" href="http://www.tillvaxtverket.se/"><img src="img/tillvaxtverket.png" width="80" alt="Tillväxtverket"/></a>            
+            <a  class="image" href="https://sandbox.swedenconnect.se/home/index.html"><img src="img/sweden-connect.svg" height="33" alt="Sweden Connect"/></a>
         </div>
         <div id="titleDiv">TSL Trust Administration Service</div>
         <div id="mainMenu">

@@ -1,7 +1,7 @@
 <%-- 
     Document   : about
     Created on : May 1, 2012, 10:33:51 PM
-    Author     : Tillväxtverket
+    Author     : Tillvï¿½xtverket
 --%>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -17,7 +17,7 @@
     <body>
         <div class="top">
             <div class="rightTop">
-                <a  class="image" href="http://www.tillvaxtverket.se/"><img src="img/tillvaxtverket.png" width="120" alt="Tillväxtverket"/></a>            
+                <a  class="image" href="https://sandbox.swedenconnect.se/home/index.html"><img src="img/sweden-connect.svg" height="50" alt="Sweden Connect"/></a>
             </div>
             <div class="centerTop">
                 <h1>About the sample TSL Trust Signature Validation Service</h1>

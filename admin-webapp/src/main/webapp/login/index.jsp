@@ -21,7 +21,7 @@
     <body>
 
         <div class="rightTop">
-            <a  class="image" href="http://www.tillvaxtverket.se/"><img src="img/tillvaxtverket.png" width="80" alt="Tillväxtverket"/></a>            
+            <a  class="image" href="https://sandbox.swedenconnect.se/home/index.html"><img src="img/sweden-connect.svg" height="33" alt="Sweden Connect"/></a>
         </div>
         <div id="titleDiv">TSL Trust Administration Service</div>
         <div id="mainMenu">
@@ -43,7 +43,7 @@
         <div style="width:100%;padding-bottom: 20px">
             <div style="float:right;width:40%">
                 <div style="background-color: inherit;float:right">
-                    <b class="information" style="margin-right: 50px">Pågående session</b>
+                    <b class="information" style="margin-right: 50px">Pï¿½gï¿½ende session</b>
 <!--                    <input type="checkbox" onclick="showInfo()" id="infoBox" 
                            style="margin-right: 5px"/>Info-->
                 </div>

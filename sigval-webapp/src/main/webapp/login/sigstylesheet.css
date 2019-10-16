@@ -3,14 +3,14 @@ body {
     font-family: Verdana, Arial, sans-serif;
     font-size: smaller;
     padding: 20px;
-    color: #555;
+    #color: #555;
     width: 90%;
 }
 
 h1 {
-    letter-spacing: 6px;
+    letter-spacing: 3px;
     font-size: 1.6em;
-    color: #be7429;
+    color: #ed6b25;
     font-weight: bold;
     margin-bottom: 10px;
 }
@@ -19,7 +19,7 @@ h2 {
     text-align: left;
     letter-spacing: 6px;
     font-size: 1.4em;
-    color: #be7429;
+    color: #ed6b25;
     font-weight: normal;
 }
 h3 {
@@ -52,12 +52,13 @@ div.rightTop{
 
     float:right;
     margin-left: 20px;
+    background-color: #ffffff;
 }
 
 
 .inpbar{
     
-    background-color: #be7429;
+    background-color: #ed6b25;
     color: #ffffff;
 }
 
@@ -78,7 +79,7 @@ td {
 }
 
 a {
-    color: #be7429;
+    color: #114254;
     text-decoration: none;
 }
 
@@ -98,7 +99,7 @@ b.colored {
 
 strong.colored{
     
-    color: #3a1f1a;
+    color: #202020;
     margin-top: 5px;
 }
 
@@ -111,7 +112,7 @@ strong.fat{
 }
 
 .b {
-    color: #683300;
+    color: #404040;
     font-weight: bold;
 }
 
@@ -172,11 +173,11 @@ strong.fat{
 
 .warn{
     
-    color: #bb6a00;
+    color: #ed6b25;
 }
 .warnMess{
     
-    color: #bb6a00;
+    color: #ed6b25;
 }
 .normal {
     
