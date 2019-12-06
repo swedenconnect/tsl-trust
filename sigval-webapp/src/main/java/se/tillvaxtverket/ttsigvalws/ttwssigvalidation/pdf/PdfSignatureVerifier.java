@@ -317,10 +317,20 @@ public class PdfSignatureVerifier {
                 ASN1Sequence signingCertificateV2Seq = (ASN1Sequence) attributeValues[0]; //Holds sequence of certs and policy
                 ASN1Sequence essCertV2Seq = (ASN1Sequence) signingCertificateV2Seq.getObjectAt(0); // holds sequence of cert
                 ASN1Sequence certSeq = (ASN1Sequence) essCertV2Seq.getObjectAt(0); //Holds seq of algoId, cert hash and sigId
-                ASN1Sequence algoSeq = (ASN1Sequence) certSeq.getObjectAt(0); //Holds sequence of OID and algo params
-                ASN1ObjectIdentifier algoOid = (ASN1ObjectIdentifier) algoSeq.getObjectAt(0);
-                hashAlgo = getDigestAlgo(algoOid);
-                certHashOctStr = (DEROctetString) certSeq.getObjectAt(1);
+
+                ASN1Encodable algoIdOrHash = certSeq.getObjectAt(0);
+                if (algoIdOrHash instanceof ASN1Sequence){
+                    // Hash algorithm is specified
+                    ASN1Sequence algoSeq = (ASN1Sequence) algoIdOrHash; //Holds sequence of OID and algo params
+                    ASN1ObjectIdentifier algoOid = (ASN1ObjectIdentifier) algoSeq.getObjectAt(0);
+                    hashAlgo = getDigestAlgo(algoOid);
+                    certHashOctStr = (DEROctetString) certSeq.getObjectAt(1);
+                } else {
+                    // No hash algo ID is specified. Use default SHA 256
+                    hashAlgo = DigestAlgorithm.SHA256; // SHA-256 is default
+                    certHashOctStr = (DEROctetString) algoIdOrHash;
+                }
+
             } else {
                 if (signingCertAttr != null) {
                     ASN1Encodable[] attributeValues = signingCertAttr.getAttributeValues();
