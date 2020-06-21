@@ -170,7 +170,8 @@ public class TTSigValServlet extends HttpServlet {
         }
 
         if (action.equals("verify")) {
-            String verifyResult = verifyServerDocSignature(request);
+            SigValHandler sigValHandler = new SigValHandler(baseModel, SERVER_DOC_FOLDER);
+            String verifyResult = sigValHandler.verifyServerDocSignature(request);
             if (verifyResult != null) {
                 response.setContentType("text/xml;charset=UTF-8");
                 response.setHeader("Cache-Control", "no-cache");
@@ -287,7 +288,7 @@ public class TTSigValServlet extends HttpServlet {
         return sigFiles;
     }
 
-    private String verifyServerDocSignature(HttpServletRequest request) {
+/*    private String verifyServerDocSignature(HttpServletRequest request) {
         try {
             String sigFileName = getRequestFileName(request);
             String docName = request.getParameter("id");
@@ -363,7 +364,7 @@ public class TTSigValServlet extends HttpServlet {
             }
         }
         return fileName;
-    }
+    }*/
 
     private String getAuthContext(HttpServletRequest request) {
         StringBuilder b = new StringBuilder();
@@ -485,14 +486,15 @@ public class TTSigValServlet extends HttpServlet {
                 }
 
             }
+            SigValHandler sigValHandler = new SigValHandler(baseModel, SERVER_DOC_FOLDER);
             if (uploaded && paraMap.containsKey("policy")) {
-                String verifyResult = verifySignature(request, paraMap.get("policy"), uploadedFile.getName(), uploadedFile.getAbsolutePath(), null);
+                String verifyResult = sigValHandler.verifySignature(request, paraMap.get("policy"), uploadedFile.getName(), uploadedFile.getAbsolutePath(), null);
                 sendValidationReport(verifyResult, response);
                 return;
             }
             if (paraMap.containsKey("policy") && paraMap.containsKey("fileName")) {
-                File sigFile = new File(getFullSigFileName(paraMap.get("fileName")));
-                String verifyResult = verifySignature(request, paraMap.get("policy"), sigFile.getName(), sigFile.getAbsolutePath(), null);
+                File sigFile = new File(sigValHandler.getFullSigFileName(paraMap.get("fileName")));
+                String verifyResult = sigValHandler.verifySignature(request, paraMap.get("policy"), sigFile.getName(), sigFile.getAbsolutePath(), null);
                 sendValidationReport(verifyResult, response);
                 return;
             }
@@ -513,11 +515,12 @@ public class TTSigValServlet extends HttpServlet {
 
     private void processValidationPost(HttpServletRequest request, HttpServletResponse response) {
         try {
+            SigValHandler sigValHandler = new SigValHandler(baseModel, SERVER_DOC_FOLDER);
             String dataStr = request.getParameter("data");
             String docName = request.getParameter("id");
             String policy = request.getParameter("policy");
             byte[] docBytes = Base64Coder.decode(dataStr);
-            String verifyResult = verifySignature(request, policy, docName, null, docBytes);
+            String verifyResult = sigValHandler.verifySignature(request, policy, docName, null, docBytes);
             sendValidationReport(verifyResult, response);
         } catch (Exception ex) {
             nullResponse(response);
