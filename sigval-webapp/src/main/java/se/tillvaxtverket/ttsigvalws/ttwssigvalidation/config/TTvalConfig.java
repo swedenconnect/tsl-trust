@@ -47,7 +47,8 @@ public class TTvalConfig implements ConfigData {
             TrustinfoRUrl,
             Language,
             SignatureValidationTimeoutSeconds,
-            DefaultPolicy;
+            DefaultPolicy,
+            logoFile;
 
     @Override
     public void setDefaults() {
@@ -59,6 +60,7 @@ public class TTvalConfig implements ConfigData {
         Language = "en";
         SignatureValidationTimeoutSeconds = "30";
         DefaultPolicy = "AllEUTrustServices";
+        logoFile = "eduSign.svg";
     }
 
     @Override
@@ -96,5 +98,9 @@ public class TTvalConfig implements ConfigData {
 
     public String getDefaultPolicy() {
         return DefaultPolicy;
+    }
+
+    public String getLogoFile() {
+        return logoFile;
     }
 }

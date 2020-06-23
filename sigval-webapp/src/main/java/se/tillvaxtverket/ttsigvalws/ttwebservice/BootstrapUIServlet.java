@@ -51,6 +51,8 @@ public class BootstrapUIServlet extends HttpServlet {
     ResultPageData resultPageData = factory.getResultPageData();
     request.setAttribute("result", resultPageData);
 
+    request.setAttribute("logoImage" , ServletListener.baseModel.getLogoImage().getDataUrl());
+
     forward("sigvalresult.jsp", request, response);
   }
 

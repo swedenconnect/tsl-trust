@@ -46,7 +46,7 @@
 <body>
 <div class="container">
     <div class="card" style="margin-top: 10px">
-        <div class="card-header"></div>
+        <div class="card-header"><img src="${logoImage}" alt="Logo" height="80"></div>
         <div class="card-body">
             <%
                 UIText resultText = new UIText((Locale) request.getAttribute("lang"));

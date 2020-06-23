@@ -17,9 +17,12 @@
 package se.tillvaxtverket.ttsigvalws.ttwssigvalidation.models;
 
 import se.tillvaxtverket.tsltrust.common.utils.general.ContextLogger;
+import se.tillvaxtverket.ttsigvalws.resultpage.LogoImage;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.config.ConfigData;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.sigVerify.TrustStore;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.statusCheck.CRLChecker;
+
+import java.io.File;
 
 /**
  * This base model loads and stores trust information for the signature validation process
@@ -36,6 +39,7 @@ public class SigValidationBaseModel {
     private TrustStore trustStore;
     private long trustLoadTime;
     private long trustReloadInterval = 1000*60*5;
+    private LogoImage logoImage;
 
     public SigValidationBaseModel(ConfigData conf) {
         this.conf = conf;
@@ -43,6 +47,7 @@ public class SigValidationBaseModel {
         this.trustStore = new TrustStore(conf);
         this.trustLoadTime = System.currentTimeMillis();
         this.documentFolderName = "serverdocs";
+        this.logoImage = new LogoImage(new File(conf.getDataDirectory(), "cfg/" + conf.getJsonConf().getLogoFile()));
     }
     
     /**
@@ -88,5 +93,9 @@ public class SigValidationBaseModel {
     /** Document folder */
     public String getDocumentFolderName() {
         return documentFolderName;
+    }
+
+    public LogoImage getLogoImage() {
+        return logoImage;
     }
 }
