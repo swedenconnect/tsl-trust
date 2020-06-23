@@ -1,15 +1,18 @@
 package se.tillvaxtverket.ttsigvalws.ttwebservice;
 
+import se.tillvaxtverket.tsltrust.common.utils.core.Base64Coder;
 import se.tillvaxtverket.tsltrust.common.utils.general.FilenameFilterImpl;
+import se.tillvaxtverket.ttsigvalws.daemon.ServletListener;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.document.SigDocument;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.marshaller.SignatureValidationReport;
-import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.models.SigValidationBaseModel;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.models.SigValidationModel;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.sigVerify.SigVerifier;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.sigVerify.SigVerifierFactory;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
 import java.security.KeyStore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,12 +20,8 @@ import java.util.logging.Logger;
 public class SigValHandler {
 
   private static final Logger LOG = Logger.getLogger(SigValHandler.class.getName());
-  private final SigValidationBaseModel baseModel;
-  private final String documentFolderName;
 
-  public SigValHandler(SigValidationBaseModel baseModel, String documentFolderName) {
-    this.baseModel = baseModel;
-    this.documentFolderName = documentFolderName;
+  public SigValHandler() {
   }
 
   public String verifyServerDocSignature(HttpServletRequest request) {
@@ -32,7 +31,7 @@ public class SigValHandler {
       String policyName = request.getParameter("policy");
       policyName = policyName == null ? "" : policyName;
 
-      return verifySignature(request, policyName, docName, sigFileName, null);
+      return verifySignature(policyName, sigFileName).generateReport();
     } catch (Exception ex) {
     }
     return "";
@@ -45,7 +44,7 @@ public class SigValHandler {
 
   public String getFullSigFileName(String formFileName) {
     String fileName = "";
-    File serverDocsDir = new File(baseModel.getConf().getDataDirectory(), documentFolderName);
+    File serverDocsDir = new File(ServletListener.baseModel.getConf().getDataDirectory(), ServletListener.baseModel.getDocumentFolderName());
     if (serverDocsDir.canRead()) {
       File[] fileList = serverDocsDir.listFiles(new FilenameFilterImpl("."));
       for (File listedFile : fileList) {
@@ -58,33 +57,41 @@ public class SigValHandler {
   }
 
 
-  public String verifySignature(HttpServletRequest request, String policyName, String docName, String sigFileName, byte[] sigBytes) {
+  public SignatureValidationReport verifySignature(String policyName, String sigFileAbsolutePath) {
+    File sigFile = new File(sigFileAbsolutePath);
+    return verifySignature(policyName, new File(sigFileAbsolutePath));
+  }
+
+  public SignatureValidationReport verifySignature(String policyName, File sigFile) {
+    SigDocument sigDoc = new SigDocument(sigFile);
+    return verifySignature(policyName, sigFile.getName(), sigDoc);
+  }
+
+  public SignatureValidationReport verifySignature(String policyName, String docName, byte[] sigBytes) {
+    SigDocument sigDoc = new SigDocument(sigBytes);
+    return verifySignature(policyName, docName, sigDoc);
+  }
+
+  public SignatureValidationReport verifySignature(String policyName, String docName, SigDocument sigDoc) {
     SigValidationModel model;
     Thread verifierTask;
 
     model = new SigValidationModel();
-    model.setBaseModel(baseModel);
-    SigDocument sigDoc = null;
-    if (sigBytes == null) {
-      sigDoc = new SigDocument(new File(sigFileName));
-      model.setSigDocument(sigDoc);
-    } else {
-      sigDoc = new SigDocument(sigBytes);
-      model.setSigDocument(sigDoc);
-    }
+    model.setBaseModel(ServletListener.baseModel);
+    model.setSigDocument(sigDoc);
     String pName = (policyName == null) ? "" : policyName;
     model.setPolicyName(pName);
     sigDoc.setDocName(docName == null ? "" : docName);
     String policyDesc;
     try {
-      policyDesc = baseModel.getTrustStore().getPolicyDescMap().get(pName);
+      policyDesc = ServletListener.baseModel.getTrustStore().getPolicyDescMap().get(pName);
       model.setPolicyDescription(policyDesc);
     } catch (Exception ex) {
     }
     model.setCheckOcspAndCrl(false);
     model.setPrefSpeed(true);
 
-    KeyStore keyStore = baseModel.getTrustStore().getKeyStore(pName);
+    KeyStore keyStore = ServletListener.baseModel.getTrustStore().getKeyStore(pName);
 
     if (keyStore != null) {
       SigVerifier verifier = SigVerifierFactory.getSigVerifier(model);
@@ -95,13 +102,51 @@ public class SigValHandler {
           verifierTask.start();
           verifierTask.join();
           SignatureValidationReport report = new SignatureValidationReport(model);
-          return report.generateReport();
+          return report;
         } catch (InterruptedException ex) {
           LOG.log(Level.WARNING, null, ex);
         }
       }
     }
     return null;
+  }
+
+  public static void nullResponse(HttpServletResponse response) {
+    try {
+      response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+      response.getWriter().write("");
+      response.getWriter().close();
+    } catch (Exception ex) {
+    }
+  }
+
+  public void processValidationPost(HttpServletRequest request, HttpServletResponse response) {
+    try {
+      String dataStr = request.getParameter("data");
+      String docName = request.getParameter("id");
+      String policy = request.getParameter("policy");
+      byte[] docBytes = Base64Coder.decode(dataStr);
+      String verifyResult = verifySignature(policy, docName, docBytes).generateReport();
+      sendValidationReport(verifyResult, response);
+    } catch (Exception ex) {
+      nullResponse(response);
+    }
+  }
+
+  public void sendValidationReport(String verifyResult, HttpServletResponse response) {
+    if (verifyResult != null) {
+      response.setContentType("text/xml;charset=UTF-8");
+      response.setHeader("Cache-Control", "no-cache");
+      try {
+        response.getWriter().write(verifyResult);
+        return;
+      } catch (IOException ex) {
+        nullResponse(response);
+      }
+    } else {
+      nullResponse(response);
+    }
+
   }
 
 

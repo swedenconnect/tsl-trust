@@ -30,6 +30,7 @@ import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.statusCheck.CRLChecker;
 public class SigValidationBaseModel {
     
     public final ContextLogger LOG = new ContextLogger("BaseLogger", true);
+    private final String documentFolderName;
     private ConfigData conf;
     private CRLChecker crlCache;
     private TrustStore trustStore;
@@ -38,9 +39,10 @@ public class SigValidationBaseModel {
 
     public SigValidationBaseModel(ConfigData conf) {
         this.conf = conf;
-        crlCache = new CRLChecker(conf);
-        trustStore = new TrustStore(conf);
-        trustLoadTime = System.currentTimeMillis();
+        this.crlCache = new CRLChecker(conf);
+        this.trustStore = new TrustStore(conf);
+        this.trustLoadTime = System.currentTimeMillis();
+        this.documentFolderName = "serverdocs";
     }
     
     /**
@@ -83,5 +85,8 @@ public class SigValidationBaseModel {
         return trustStore;
     }
 
-    
+    /** Document folder */
+    public String getDocumentFolderName() {
+        return documentFolderName;
+    }
 }

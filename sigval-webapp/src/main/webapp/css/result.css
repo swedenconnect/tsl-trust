@@ -1,0 +1,30 @@
+.icon-ok {
+
+}
+
+.icon-ok{
+    color: #1c7430;
+}
+
+.icon-error{
+    color: #6e001d;
+}
+
+.icon-warning{
+    color: #c69500;
+}
+
+td.attr-td{
+    width: 220px;
+    font-weight: bold;
+}
+
+td.sig-res-param{
+    width: 220px;
+    font-weight: bold;
+}
+
+td.overall-param{
+    width: 240px;
+    font-weight: bold;
+}

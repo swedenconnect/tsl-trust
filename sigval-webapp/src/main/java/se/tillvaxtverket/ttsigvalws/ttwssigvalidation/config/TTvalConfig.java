@@ -46,7 +46,8 @@ public class TTvalConfig implements ConfigData {
             VerboseLogging,
             TrustinfoRUrl,
             Language,
-            SignatureValidationTimeoutSeconds;
+            SignatureValidationTimeoutSeconds,
+            DefaultPolicy;
 
     @Override
     public void setDefaults() {
@@ -57,6 +58,7 @@ public class TTvalConfig implements ConfigData {
         TrustinfoRUrl = "http://localhost/~stefan/tsltrust/rootlist.xml";
         Language = "en";
         SignatureValidationTimeoutSeconds = "30";
+        DefaultPolicy = "AllEUTrustServices";
     }
 
     @Override
@@ -91,5 +93,8 @@ public class TTvalConfig implements ConfigData {
     public String getSignatureValidationTimeoutSeconds() {
         return SignatureValidationTimeoutSeconds;
     }
-    
+
+    public String getDefaultPolicy() {
+        return DefaultPolicy;
+    }
 }

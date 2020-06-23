@@ -123,6 +123,14 @@ public class SignatureValidationReport implements SigreportConstants {
     }
 
     /**
+     * Gets the signature validation model holding the validation data
+     * @return SigValidationModel
+     */
+    public SigValidationModel getModel() {
+        return model;
+    }
+
+    /**
      * @return XML Signature validation report
      */
     public String generateReport() {

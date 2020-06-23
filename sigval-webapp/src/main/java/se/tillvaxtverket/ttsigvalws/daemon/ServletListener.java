@@ -16,7 +16,14 @@
  */
 package se.tillvaxtverket.ttsigvalws.daemon;
 
+import iaik.x509.ocsp.net.OCSPContentHandlerFactory;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.config.ConfigData;
+import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.models.SigValidationBaseModel;
+
+import java.net.HttpURLConnection;
 import java.security.Security;
+import java.util.Locale;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -29,10 +36,23 @@ public class ServletListener implements ServletContextListener {
 
     private static final Logger LOG = Logger.getLogger(ServletListener.class.getName());
     private static final String SERVLET_PATH = "/TTSigvalService";
+    public static SigValidationBaseModel baseModel;
     private ServletDaemon daemonTask = null;
 
     static {
+        // Remove any occurance of the BC provider
+        Security.removeProvider("BC");
+        // Insert the BC provider in a preferred position
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
         Security.insertProviderAt(new iaik.security.provider.IAIK(), 2);
+        try {
+            SecurityManager secMan = new SecurityManager();
+            secMan.checkSetFactory();
+            HttpURLConnection.setContentHandlerFactory(new OCSPContentHandlerFactory());
+            LOG.info("Setting URL Content handler factory to OCSPContentHandlerFactory");
+        } catch (Exception ex) {
+            LOG.warning("Error when setting URL content handler factory");
+        }
     }
 
     @Override
@@ -43,6 +63,12 @@ public class ServletListener implements ServletContextListener {
         contextPath = (contextPath == null) ? "null" : contextPath;
         LOG.info("Sigval Servlet - found context path: " + contextPath);
         if (contextPath.equals(SERVLET_PATH)) {
+            // Init models
+            String dataDir = servletContext.getInitParameter("DataDirectory");
+            ConfigData conf = new ConfigData(dataDir);
+            baseModel = new SigValidationBaseModel(conf);
+            Locale.setDefault(new Locale(baseModel.getConf().getLanguageCode()));
+
             //Init Daemon
             LOG.info("Sigval Servlet - initializing context parameters");
             ContextParameters contextParams = new ContextParameters(servletContext);
