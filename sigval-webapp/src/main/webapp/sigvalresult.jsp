@@ -9,6 +9,14 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%
+    Locale lang = (Locale) request.getAttribute("lang");
+    UIText resultText = new UIText(lang);
+    ResultPageData data = (ResultPageData) request.getAttribute("result");
+    String okIcn = "<i class='fas fa-check-circle icon-ok'></i>";
+    String nokIcn = "<i class='fas fa-times-circle icon-error'></i>";
+    String warnIcn = "<i class='fas fa-exclamation-triangle icon-warning'></i>";
+%>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -28,13 +36,17 @@
     <script src="webjars/bootstrap-select/1.13.17/js/i18n/defaults-sv_SE.min.js"></script>
     <script src="webjars/bootstrap-fileinput/5.1.0/js/fileinput.min.js"></script>
     <script src="webjars/bootstrap-fileinput/5.1.0/js/locales/sv.js"></script>
+    <script src="webjars/highlightjs/9.15.10/highlight.min.js"></script>
     <script src="webjars/jquery-cookie/1.4.1-1/jquery.cookie.js"></script>
-    <script src="js/upload.js"></script>
+    <script src="js/result.js"></script>
+    <script src="js/lang.js"></script>
 
-    <link rel="stylesheet" href="css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="css/${bootstrapCss}"/>
     <link rel="stylesheet" href="webjars/font-awesome/5.13.0/css/all.min.css">
     <link rel="stylesheet" href="webjars/bootstrap-select/1.13.17/css/bootstrap-select.min.css"/>
     <link rel="stylesheet" href="webjars/bootstrap-fileinput/5.1.0/css/fileinput.min.css">
+    <link rel="stylesheet" href="webjars/highlightjs/9.15.10/styles/atom-one-light.css">
+    <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/result.css">
 
     <script>
@@ -46,18 +58,29 @@
 <body>
 <div class="container">
     <div class="card" style="margin-top: 10px">
-        <div class="card-header"><img src="${logoImage}" alt="Logo" height="80"></div>
-        <div class="card-body">
+        <div class="card-header">
+            <img src="${logoImage}" alt="Logo" height="50">
             <%
-                UIText resultText = new UIText((Locale) request.getAttribute("lang"));
-                ResultPageData data = (ResultPageData) request.getAttribute("result");
-                String okIcn = "<i class='fas fa-check-circle icon-ok'></i>";
-                String nokIcn = "<i class='fas fa-times-circle icon-error'></i>";
-                String warnIcn = "<i class='fas fa-exclamation-triangle icon-warning'></i>";
+                LogoImage secondaryLogoImage = (LogoImage) request.getAttribute("secondaryLogoImage");
+                if (secondaryLogoImage != null) {
+                    out.print("<img align='right' src='" + secondaryLogoImage.getDataUrl() + "' alt='Logo' height='50' >");
+                }
             %>
-            <h3><%=resultText.get("title1")%>
-            </h3>
-            <%=resultText.get("document")%>:&nbsp;<b>${fileName}</b>
+        </div>
+        <div class="card-body">
+            <div style="float: right">
+                <a href="javascript:selectLang('en','<%=lang.getLanguage()%>','result')" class="<%=lang.getLanguage().equals("en")?"lang-selected":""%>">en</a>
+                <a href="javascript:selectLang('sv','<%=lang.getLanguage()%>','result')" class="<%=lang.getLanguage().equals("sv")?"lang-selected":""%>">sv</a>
+            </div>
+            <h4><%=resultText.get("title1")%></h4>
+            <%=resultText.get("document")%>:&nbsp;<b>${fileName}</b>&nbsp;&nbsp;&nbsp;
+            <%
+                if (data.getDocumentType() != null){
+            %>
+            <button class="btn btn-sm btn-primary" style="height: 25px; padding-top: 1px; padding-bottom: 1px" onclick="$('#metadataViewDiv').fadeIn(700)"><%=resultText.get("showDoc")%></button>
+            <%
+                }
+            %>
 
             <table class="table table-sm table-borderless" style="margin-top: 20px">
                 <tr>
@@ -81,10 +104,8 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="overall-param"><%=resultText.get("doctype")%>
-                    </td>
-                    <td><%=data.getDocumentType()%>
-                    </td>
+                    <td class="overall-param"><%=resultText.get("doctype")%></td>
+                    <td><%=data.getDocumentType() != null ? data.getDocumentType() : resultText.get("unknown")%></td>
                 </tr>
 <%--
                 <tr>
@@ -199,12 +220,46 @@
 
 
             <br>
-            <a class="btn btn-secondary" href="sigval.jsp">Home</a>
-
+            <a class="btn btn-primary" href="main"><%=resultText.get("home")%></a>
 
         </div>
     </div>
 </div>
+
+<!-- Signed document display box -->
+<div id="metadataViewDiv" class="confirm-bgr">
+    <div class="card metadata-panel">
+        <div id="metadataTitleDiv" class="card-header">
+            <table style="width: 100%">
+                <tr>
+                    <td id="metadataTitleCell">
+                        <h5>${fileName}</h5>
+                    </td>
+                    <td style="text-align: right">
+                        <button class="btn btn-sm btn-primary" style="margin-top: 10px" onclick="$('#metadataViewDiv').fadeOut(700);"><%=resultText.get("close")%></button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="metadataBodyDiv" class="card-body">
+            <div id="metadataDisplayDiv">
+                <%
+                    if (data.getDocumentType() != null){
+                        if (data.getDocumentType().equalsIgnoreCase("XML")) {
+                            out.print("<pre><code>"+request.getAttribute("xmlPrettyPrint")+"</code></pre>");
+                        }
+                        if (data.getDocumentType().equalsIgnoreCase("PDF")){
+                            out.print("<embed id='pdfFrame' src='inlinepdf' type='application/pdf' style='width: 100%'>");
+                        }
+                    }
+                %>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 </body>
 </html>

@@ -57,6 +57,11 @@ public class ResultPageDataFactory {
     SigValidationModel model = svr.getModel();
     List<SignatureValidationContext> sigResultList = model.getSignatureContexts();
     if (sigResultList == null || sigResultList.size() == 0){
+      try {
+        // Attempt to set document type
+        resultPageData.setDocumentType(model.getSigDocument().getDocType().name());
+      } catch (Exception ignored){
+      }
       return;
     }
     resultPageData.setDocumentType(model.getSigDocument().getDocType().name());

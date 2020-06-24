@@ -48,7 +48,9 @@ public class TTvalConfig implements ConfigData {
             Language,
             SignatureValidationTimeoutSeconds,
             DefaultPolicy,
-            logoFile;
+            logoFile,
+            secondaryLogoFile,
+            bootstrapCss;
 
     @Override
     public void setDefaults() {
@@ -61,6 +63,8 @@ public class TTvalConfig implements ConfigData {
         SignatureValidationTimeoutSeconds = "30";
         DefaultPolicy = "AllEUTrustServices";
         logoFile = "eduSign.svg";
+        secondaryLogoFile = null;
+        bootstrapCss="bootstrap.min.css";
     }
 
     @Override
@@ -102,5 +106,13 @@ public class TTvalConfig implements ConfigData {
 
     public String getLogoFile() {
         return logoFile;
+    }
+
+    public String getSecondaryLogoFile() {
+        return secondaryLogoFile;
+    }
+
+    public String getBootstrapCss() {
+        return bootstrapCss;
     }
 }

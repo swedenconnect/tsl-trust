@@ -1,9 +1,12 @@
 package se.tillvaxtverket.ttsigvalws.ttwebservice;
 
-import org.apache.commons.codec.binary.Hex;
+import com.aaasec.lib.crypto.xml.XmlBeansUtil;
+import lombok.extern.java.Log;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.xmlbeans.XmlException;
+import org.apache.xmlbeans.XmlObject;
 import se.tillvaxtverket.ttsigvalws.daemon.ServletListener;
 import se.tillvaxtverket.ttsigvalws.resultpage.ResultPageData;
 import se.tillvaxtverket.ttsigvalws.resultpage.ResultPageDataFactory;
@@ -14,11 +17,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.logging.Level;
 
+@Log
 public class BootstrapUIServlet extends HttpServlet {
   private static final int MEMORY_THRESHOLD = 20000000;
   private static final long MAX_FILE_SIZE = 10000000;
@@ -36,22 +42,50 @@ public class BootstrapUIServlet extends HttpServlet {
 
   @Override protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
+
+    String servletPath = request.getServletPath();
     HttpSession session = request.getSession();
-    Locale lang = getLang(request);
     File sigFile = (File) session.getAttribute("sigFile");
+    Locale lang = getLang(request);
+    request.setAttribute("logoImage" , ServletListener.baseModel.getLogoImage().getDataUrl());
+    request.setAttribute("secondaryLogoImage" , ServletListener.baseModel.getSecondaryLogoImage());
+    request.setAttribute("lang", lang);
+    request.setAttribute("bootstrapCss", ServletListener.baseModel.getConf().getJsonConf().getBootstrapCss());
+
+    // Test if we are starting a new session by calling the main url
+    if (servletPath.endsWith("main")){
+      if (sigFile != null && sigFile.exists()){
+        sigFile.delete();
+      }
+      session.removeAttribute("sigFile");
+      forward("sigval.jsp", request, response);
+      return;
+    }
+
     if (sigFile == null || !sigFile.exists()){
-      response.sendRedirect("sigval.jsp");
+      response.sendRedirect("main");
       return;
     }
     request.setAttribute("fileName", sigFile.getName());
-    request.setAttribute("lang", lang);
     SignatureValidationReport signatureValidationReport = sigValHandler.verifySignature(defaultPolicy, sigFile);
 
     ResultPageDataFactory factory = new ResultPageDataFactory(signatureValidationReport, sigFile.getName(), lang);
     ResultPageData resultPageData = factory.getResultPageData();
     request.setAttribute("result", resultPageData);
 
-    request.setAttribute("logoImage" , ServletListener.baseModel.getLogoImage().getDataUrl());
+    String documentType = resultPageData.getDocumentType();
+    if (documentType != null && documentType.equalsIgnoreCase("XML")){
+      String xmlPrettyPrint;
+      try {
+        xmlPrettyPrint = new String (XmlBeansUtil.getStyledBytes(XmlObject.Factory.parse(sigFile)), StandardCharsets.UTF_8)
+        .replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+      }
+      catch (XmlException e) {
+        log.log(Level.WARNING, "Unable to parse uploaded signed XML document", e);
+        xmlPrettyPrint = "Unable to parse uploaded XML document";
+      }
+      request.setAttribute("xmlPrettyPrint", xmlPrettyPrint);
+    }
 
     forward("sigvalresult.jsp", request, response);
   }
@@ -63,7 +97,7 @@ public class BootstrapUIServlet extends HttpServlet {
     if (langSelectCookieOptional.isPresent()){
       return new Locale(langSelectCookieOptional.get().getValue());
     }
-    return new Locale("sv");
+    return new Locale(ServletListener.baseModel.getConf().getJsonConf().getLanguage());
   }
 
   @Override protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -79,7 +113,7 @@ public class BootstrapUIServlet extends HttpServlet {
       ServletFileUpload upload = new ServletFileUpload(factory);
       upload.setFileSizeMax(MAX_FILE_SIZE);
       upload.setSizeMax(MAX_REQUEST_SIZE);
-      File uploadDir = new File(ServletListener.baseModel.getConf().getDataDirectory(), ServletListener.baseModel.getDocumentFolderName());
+      File uploadDir = new File(ServletListener.baseModel.getConf().getDataDirectory(), "uploads");
       if (!uploadDir.exists()) {
         uploadDir.mkdirs();
       }
@@ -91,6 +125,7 @@ public class BootstrapUIServlet extends HttpServlet {
         if (formItems != null && formItems.size() > 0) {
           for (FileItem item : formItems) {
             if (!item.isFormField()) {
+              //TODO add random number to file name to exclude risk for collisions
               fileName = new File(item.getName()).getName();
               File storeFile = new File(uploadDir, fileName);
               if (storeFile.exists()){
@@ -99,6 +134,7 @@ public class BootstrapUIServlet extends HttpServlet {
               item.write(storeFile);
               uploaded = true;
               request.getSession().setAttribute("sigFile", storeFile);
+              storeFile.deleteOnExit();
             }
           }
         }

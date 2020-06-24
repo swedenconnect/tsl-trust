@@ -25,7 +25,16 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>BootstrapUIServlet</servlet-name>
-        <url-pattern>/bsui</url-pattern>
+        <url-pattern>/main</url-pattern>
+        <url-pattern>/result</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>PdfDataExportServlet</servlet-name>
+        <servlet-class>se.tillvaxtverket.ttsigvalws.ttwebservice.PdfDataExportServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PdfDataExportServlet</servlet-name>
+        <url-pattern>/inlinepdf</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
