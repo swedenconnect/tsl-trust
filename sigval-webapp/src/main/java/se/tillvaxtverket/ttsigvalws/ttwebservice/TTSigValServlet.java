@@ -267,13 +267,13 @@ public class TTSigValServlet extends HttpServlet {
 
             }
             if (uploaded && paraMap.containsKey("policy")) {
-                String verifyResult = sigValHandler.verifySignature(paraMap.get("policy"), uploadedFile).generateReport();
+                String verifyResult = sigValHandler.verifySignature(paraMap.get("policy"), uploadedFile.getName(), uploadedFile).generateReport();
                 sigValHandler.sendValidationReport(verifyResult, response);
                 return;
             }
             if (paraMap.containsKey("policy") && paraMap.containsKey("fileName")) {
                 File sigFile = new File(sigValHandler.getFullSigFileName(paraMap.get("fileName")));
-                String verifyResult = sigValHandler.verifySignature(paraMap.get("policy"), sigFile).generateReport();
+                String verifyResult = sigValHandler.verifySignature(paraMap.get("policy"), sigFile.getName(), sigFile).generateReport();
                 sigValHandler.sendValidationReport(verifyResult, response);
                 return;
             }

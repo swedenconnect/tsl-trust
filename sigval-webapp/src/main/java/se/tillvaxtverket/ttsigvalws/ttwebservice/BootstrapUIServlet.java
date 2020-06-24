@@ -10,6 +10,7 @@ import org.apache.xmlbeans.XmlObject;
 import se.tillvaxtverket.ttsigvalws.daemon.ServletListener;
 import se.tillvaxtverket.ttsigvalws.resultpage.ResultPageData;
 import se.tillvaxtverket.ttsigvalws.resultpage.ResultPageDataFactory;
+import se.tillvaxtverket.ttsigvalws.resultpage.SigFile;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.marshaller.SignatureValidationReport;
 
 import javax.servlet.ServletConfig;
@@ -45,7 +46,7 @@ public class BootstrapUIServlet extends HttpServlet {
 
     String servletPath = request.getServletPath();
     HttpSession session = request.getSession();
-    File sigFile = (File) session.getAttribute("sigFile");
+    SigFile sigFile = (SigFile) session.getAttribute("sigFile");
     Locale lang = getLang(request);
     request.setAttribute("logoImage" , ServletListener.baseModel.getLogoImage().getDataUrl());
     request.setAttribute("secondaryLogoImage" , ServletListener.baseModel.getSecondaryLogoImage());
@@ -54,22 +55,22 @@ public class BootstrapUIServlet extends HttpServlet {
 
     // Test if we are starting a new session by calling the main url
     if (servletPath.endsWith("main")){
-      if (sigFile != null && sigFile.exists()){
-        sigFile.delete();
+      if (sigFile != null && sigFile.getStorageFile().exists()){
+        sigFile.getStorageFile().delete();
       }
       session.removeAttribute("sigFile");
       forward("sigval.jsp", request, response);
       return;
     }
 
-    if (sigFile == null || !sigFile.exists()){
+    if (sigFile == null || !sigFile.getStorageFile().exists()){
       response.sendRedirect("main");
       return;
     }
-    request.setAttribute("fileName", sigFile.getName());
-    SignatureValidationReport signatureValidationReport = sigValHandler.verifySignature(defaultPolicy, sigFile);
+    request.setAttribute("fileName", sigFile.getFileName());
+    SignatureValidationReport signatureValidationReport = sigValHandler.verifySignature(defaultPolicy, sigFile.getFileName(), sigFile.getStorageFile());
 
-    ResultPageDataFactory factory = new ResultPageDataFactory(signatureValidationReport, sigFile.getName(), lang);
+    ResultPageDataFactory factory = new ResultPageDataFactory(signatureValidationReport, sigFile.getFileName(), lang);
     ResultPageData resultPageData = factory.getResultPageData();
     request.setAttribute("result", resultPageData);
 
@@ -77,7 +78,7 @@ public class BootstrapUIServlet extends HttpServlet {
     if (documentType != null && documentType.equalsIgnoreCase("XML")){
       String xmlPrettyPrint;
       try {
-        xmlPrettyPrint = new String (XmlBeansUtil.getStyledBytes(XmlObject.Factory.parse(sigFile)), StandardCharsets.UTF_8)
+        xmlPrettyPrint = new String (XmlBeansUtil.getStyledBytes(XmlObject.Factory.parse(sigFile.getStorageFile())), StandardCharsets.UTF_8)
         .replaceAll("<", "&lt;").replaceAll(">", "&gt;");
       }
       catch (XmlException e) {
@@ -113,10 +114,6 @@ public class BootstrapUIServlet extends HttpServlet {
       ServletFileUpload upload = new ServletFileUpload(factory);
       upload.setFileSizeMax(MAX_FILE_SIZE);
       upload.setSizeMax(MAX_REQUEST_SIZE);
-      File uploadDir = new File(ServletListener.baseModel.getConf().getDataDirectory(), "uploads");
-      if (!uploadDir.exists()) {
-        uploadDir.mkdirs();
-      }
 
       boolean uploaded = false;
       String fileName = "";
@@ -125,15 +122,12 @@ public class BootstrapUIServlet extends HttpServlet {
         if (formItems != null && formItems.size() > 0) {
           for (FileItem item : formItems) {
             if (!item.isFormField()) {
-              //TODO add random number to file name to exclude risk for collisions
               fileName = new File(item.getName()).getName();
-              File storeFile = new File(uploadDir, fileName);
-              if (storeFile.exists()){
-                storeFile.delete();
-              }
+              SigFile sigFile = new SigFile(fileName);
+              File storeFile = sigFile.getStorageFile();
               item.write(storeFile);
               uploaded = true;
-              request.getSession().setAttribute("sigFile", storeFile);
+              request.getSession().setAttribute("sigFile", sigFile);
               storeFile.deleteOnExit();
             }
           }

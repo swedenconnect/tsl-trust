@@ -1,6 +1,7 @@
 package se.tillvaxtverket.ttsigvalws.ttwebservice;
 
 import lombok.extern.java.Log;
+import se.tillvaxtverket.ttsigvalws.resultpage.SigFile;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -18,9 +19,9 @@ public class PdfDataExportServlet extends HttpServlet {
     throws ServletException, IOException {
 
     HttpSession session = request.getSession();
-    File sigFile = (File) session.getAttribute("sigFile");
+    SigFile sigFile = (SigFile) session.getAttribute("sigFile");
 
-    if (sigFile == null || !sigFile.exists()){
+    if (sigFile == null || !sigFile.getStorageFile().exists()){
       log.warning("Attempt to access current signed document but no such document exists");
       SigValHandler.nullResponse(response);
       return;
@@ -28,10 +29,10 @@ public class PdfDataExportServlet extends HttpServlet {
 
 
     response.setContentType("application/pdf");
-    response.addHeader("Content-Disposition", "attachment; filename=" + sigFile.getName());
-    response.setContentLength((int) sigFile.length());
+    response.addHeader("Content-Disposition", "attachment; filename=" + sigFile.getFileName());
+    response.setContentLength((int) sigFile.getStorageFile().length());
 
-    FileInputStream fileInputStream = new FileInputStream(sigFile);
+    FileInputStream fileInputStream = new FileInputStream(sigFile.getStorageFile());
     OutputStream responseOutputStream = response.getOutputStream();
     int bytes;
     while ((bytes = fileInputStream.read()) != -1) {

@@ -31,7 +31,7 @@ public class SigValHandler {
       String policyName = request.getParameter("policy");
       policyName = policyName == null ? "" : policyName;
 
-      return verifySignature(policyName, sigFileName).generateReport();
+      return verifySignature(policyName, docName, new File(sigFileName)).generateReport();
     } catch (Exception ex) {
     }
     return "";
@@ -57,16 +57,10 @@ public class SigValHandler {
   }
 
 
-  public SignatureValidationReport verifySignature(String policyName, String sigFileAbsolutePath) {
-    File sigFile = new File(sigFileAbsolutePath);
-    return verifySignature(policyName, new File(sigFileAbsolutePath));
-  }
-
-  public SignatureValidationReport verifySignature(String policyName, File sigFile) {
+  public SignatureValidationReport verifySignature(String policyName, String docName, File sigFile) {
     SigDocument sigDoc = new SigDocument(sigFile);
-    return verifySignature(policyName, sigFile.getName(), sigDoc);
+    return verifySignature(policyName, docName, sigDoc);
   }
-
   public SignatureValidationReport verifySignature(String policyName, String docName, byte[] sigBytes) {
     SigDocument sigDoc = new SigDocument(sigBytes);
     return verifySignature(policyName, docName, sigDoc);
