@@ -21,6 +21,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import se.tillvaxtverket.tsltrust.common.utils.general.FilenameFilterImpl;
 import se.tillvaxtverket.ttsigvalws.daemon.ServletListener;
+import se.tillvaxtverket.ttsigvalws.resultpage.SigFile;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -228,7 +229,7 @@ public class TTSigValServlet extends HttpServlet {
     private void processFileUpload(HttpServletRequest request, HttpServletResponse response) {
         // Create a factory for disk-based file items
         Map<String, String> paraMap = new HashMap<String, String>();
-        File uploadedFile = null;
+        SigFile sigFile = null;
         boolean uploaded = false;
         DiskFileItemFactory factory = new DiskFileItemFactory();
         File storageDir = new File(ServletListener.baseModel.getConf().getDataDirectory() + "/uploads");
@@ -253,13 +254,12 @@ public class TTSigValServlet extends HttpServlet {
                     String contentType = item.getContentType();
                     boolean isInMemory = item.isInMemory();
                     long sizeInBytes = item.getSize();
-                    uploadedFile = new File(storageDir, fileName);
+                    sigFile = new SigFile(fileName);
+                    File uploadedFile = sigFile.getStorageFile();
                     try {
-                        if (uploadedFile.exists()){
-                            uploadedFile.delete();
-                        }
                         item.write(uploadedFile);
                         uploaded = true;
+                        uploadedFile.deleteOnExit();
                     } catch (Exception ex) {
                       ex.printStackTrace();
                     }
@@ -267,13 +267,14 @@ public class TTSigValServlet extends HttpServlet {
 
             }
             if (uploaded && paraMap.containsKey("policy")) {
-                String verifyResult = sigValHandler.verifySignature(paraMap.get("policy"), uploadedFile.getName(), uploadedFile).generateReport();
+                String verifyResult = sigValHandler.verifySignature(paraMap.get("policy"), sigFile.getFileName(), sigFile.getStorageFile()).generateReport();
+                sigFile.getStorageFile().delete();
                 sigValHandler.sendValidationReport(verifyResult, response);
                 return;
             }
             if (paraMap.containsKey("policy") && paraMap.containsKey("fileName")) {
-                File sigFile = new File(sigValHandler.getFullSigFileName(paraMap.get("fileName")));
-                String verifyResult = sigValHandler.verifySignature(paraMap.get("policy"), sigFile.getName(), sigFile).generateReport();
+                File serverSigFile = new File(sigValHandler.getFullSigFileName(paraMap.get("fileName")));
+                String verifyResult = sigValHandler.verifySignature(paraMap.get("policy"), serverSigFile.getName(), serverSigFile).generateReport();
                 sigValHandler.sendValidationReport(verifyResult, response);
                 return;
             }
