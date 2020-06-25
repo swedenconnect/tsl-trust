@@ -53,7 +53,7 @@
         maxFileSizeKb = 5000;
     </script>
 
-    <title>Title</title>
+    <title>Signature Validation</title>
 </head>
 <body>
 <div class="container">

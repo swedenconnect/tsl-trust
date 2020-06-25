@@ -63,7 +63,7 @@ done
 
 
 # ENV variables
-export DATA_LOCATION=${CONFIG_FOLDER}
+export SIGVAL_DATALOCATION=${CONFIG_FOLDER}
 
 #
 # System settings
@@ -78,10 +78,10 @@ export
 export CATALINA_OPTS="\
           -Xmx${JVM_MAX_HEAP}\
           -Xms${JVM_START_HEAP}\
-          -Dtomcat.tls.server-key=$DATA_LOCATION/tomcat/tomcat-key.pem \
+          -Dtomcat.tls.server-key=$SIGVAL_DATALOCATION/tomcat/tomcat-key.pem \
           -Dtomcat.tls.server-key-type=RSA \
-          -Dtomcat.tls.server-certificate=$DATA_LOCATION/tomcat/tomcat-cert.pem \
-          -Dtomcat.tls.certificate-chain=$DATA_LOCATION/tomcat/tomcat-chain.pem \
+          -Dtomcat.tls.server-certificate=$SIGVAL_DATALOCATION/tomcat/tomcat-cert.pem \
+          -Dtomcat.tls.certificate-chain=$SIGVAL_DATALOCATION/tomcat/tomcat-chain.pem \
           -Dtomcat.loglevel.sigserv=INFO \
           -Dtomcat.maxlogdays=2 \
           -Dorg.apache.xml.security.ignoreLineBreaks=true \

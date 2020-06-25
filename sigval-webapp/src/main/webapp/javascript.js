@@ -531,9 +531,9 @@ function useServerDocs(){
 
 /**
  * If the user authenticates to the signature validation web application
- * using SAML based credentials using the login page available at /login/index.jsp
+ * using SAML based credentials using the login page available at /login/legacy.jsp
  * then the user identity data is obtained using this call to the servlet.
- */            
+ */
 function getAuthData(){
     $.ajax({
         type:'GET',
@@ -567,7 +567,7 @@ function addAuthData(xml){
         $(xml).find("authContext").each(function(){
             $(this).find("context").each(function(){
                 at+=docRow(3,"attr","",$(this).attr("type"), $(this).text());
-            });                
+            });
         });
 
         //User Attributes
@@ -607,9 +607,9 @@ function logoutShib(){
 function logoutAction(xml){
     $(xml).find("logout").each(function(){
         if ($(this).text()=="shibboleth"){
-            window.location ="/Shibboleth.sso/LocLogout?return=https://eid2.3xasecurity.com/login/index.jsp?logout=true";            
+            window.location ="/Shibboleth.sso/LocLogout?return=https://eid2.3xasecurity.com/login/index.jsp?logout=true";
         } else {
-            window.location="https://eid2.3xasecurity.com/login/";            
+            window.location="https://eid2.3xasecurity.com/login/";
         }
     });
 }
@@ -622,6 +622,6 @@ function showAuthInfo(){
         $("#authTableArea").fadeIn(500);
     } else {
         $("#authTableArea").fadeOut(500);
-    }    
+    }
 }
 
