@@ -209,7 +209,7 @@
                 </executions>
             </plugin>
         </plugins>
-        <finalName>TTSigvalService</finalName>
+        <finalName>sigval</finalName>
     </build>
 
 </project>

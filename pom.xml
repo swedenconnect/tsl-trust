@@ -12,6 +12,7 @@
         <module>sigval-webapp</module>
         <module>trustinfo-export</module>
         <module>admin-weblogic</module>
+        <module>docker-sigval</module>
     </modules>
     <build>
         <plugins>

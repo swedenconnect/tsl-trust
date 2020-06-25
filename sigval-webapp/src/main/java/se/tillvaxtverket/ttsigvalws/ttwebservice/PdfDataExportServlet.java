@@ -29,7 +29,8 @@ public class PdfDataExportServlet extends HttpServlet {
 
 
     response.setContentType("application/pdf");
-    response.addHeader("Content-Disposition", "attachment; filename=" + sigFile.getFileName());
+    //We don't want an attachment just the bytes for embedded pdf. Thus we comment away the regular attachment settings.
+    response.addHeader("Content-Disposition", "inline; filename=" + sigFile.getFileName());
     response.setContentLength((int) sigFile.getStorageFile().length());
 
     FileInputStream fileInputStream = new FileInputStream(sigFile.getStorageFile());

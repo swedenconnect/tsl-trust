@@ -35,7 +35,9 @@ import javax.servlet.ServletContextListener;
 public class ServletListener implements ServletContextListener {
 
     private static final Logger LOG = Logger.getLogger(ServletListener.class.getName());
-    private static final String SERVLET_PATH = "/TTSigvalService";
+    private static final String SERVLET_PATH_ENV = "SERVLET_PATH";
+    private static final String DATA_LOCATION_ENV = "SIGVAL_DATALOCATION";
+    private static final String defaultServletPath = "/sigval";
     public static SigValidationBaseModel baseModel;
     private ServletDaemon daemonTask = null;
 
@@ -61,10 +63,16 @@ public class ServletListener implements ServletContextListener {
         ServletContext servletContext = sce.getServletContext();
         String contextPath = servletContext.getContextPath();
         contextPath = (contextPath == null) ? "null" : contextPath;
-        LOG.info("Sigval Servlet - found context path: " + contextPath);
-        if (contextPath.equals(SERVLET_PATH)) {
+        String envServletPath = System.getenv(SERVLET_PATH_ENV);
+        String servletPath = envServletPath == null ? defaultServletPath: envServletPath;
+
+        if (contextPath.equals(servletPath)) {
+            LOG.info("Sigval Servlet - found context path: " + contextPath);
             // Init models
-            String dataDir = servletContext.getInitParameter("DataDirectory");
+
+            String envDataLocation = System.getenv(DATA_LOCATION_ENV);
+            String dataDir = envDataLocation == null ? servletContext.getInitParameter("DataDirectory") : envDataLocation;
+
             ConfigData conf = new ConfigData(dataDir);
             baseModel = new SigValidationBaseModel(conf);
             Locale.setDefault(new Locale(baseModel.getConf().getLanguageCode()));

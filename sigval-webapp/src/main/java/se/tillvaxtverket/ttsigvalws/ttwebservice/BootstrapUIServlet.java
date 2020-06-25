@@ -92,11 +92,13 @@ public class BootstrapUIServlet extends HttpServlet {
   }
 
   private Locale getLang(HttpServletRequest request) {
-    Optional<Cookie> langSelectCookieOptional = Arrays.stream(request.getCookies())
-      .filter(cookie -> cookie.getName().equals("langSelect"))
-      .findFirst();
-    if (langSelectCookieOptional.isPresent()){
-      return new Locale(langSelectCookieOptional.get().getValue());
+    if (request.getCookies() != null){
+      Optional<Cookie> langSelectCookieOptional = Arrays.stream(request.getCookies())
+        .filter(cookie -> cookie.getName().equals("langSelect"))
+        .findFirst();
+      if (langSelectCookieOptional.isPresent()){
+        return new Locale(langSelectCookieOptional.get().getValue());
+      }
     }
     return new Locale(ServletListener.baseModel.getConf().getJsonConf().getLanguage());
   }
