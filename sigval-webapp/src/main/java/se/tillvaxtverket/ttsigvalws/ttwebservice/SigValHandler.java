@@ -98,9 +98,11 @@ public class SigValHandler {
           SignatureValidationReport report = new SignatureValidationReport(model);
           return report;
         } catch (InterruptedException ex) {
-          LOG.log(Level.WARNING, null, ex);
+          LOG.log(Level.SEVERE, "Failure to invoke signature validation process", ex);
         }
       }
+    } else {
+      LOG.log(Level.SEVERE, "Selected policy is not supported");
     }
     return null;
   }

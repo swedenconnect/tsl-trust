@@ -8,10 +8,10 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 import se.tillvaxtverket.ttsigvalws.daemon.ServletListener;
-import se.tillvaxtverket.ttsigvalws.resultpage.ResultPageData;
-import se.tillvaxtverket.ttsigvalws.resultpage.ResultPageDataFactory;
-import se.tillvaxtverket.ttsigvalws.resultpage.SigFile;
+import se.tillvaxtverket.ttsigvalws.resultpage.*;
+import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.config.TTvalConfig;
 import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.marshaller.SignatureValidationReport;
+import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.models.SigValidationBaseModel;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -48,10 +48,14 @@ public class BootstrapUIServlet extends HttpServlet {
     HttpSession session = request.getSession();
     SigFile sigFile = (SigFile) session.getAttribute("sigFile");
     Locale lang = getLang(request);
-    request.setAttribute("logoImage" , ServletListener.baseModel.getLogoImage().getDataUrl());
-    request.setAttribute("secondaryLogoImage" , ServletListener.baseModel.getSecondaryLogoImage());
+    SigValidationBaseModel baseModel = ServletListener.baseModel;
+    TTvalConfig ttValConfig = baseModel.getConf().getJsonConf();
+    request.setAttribute("logoImage" , baseModel.getLogoImage().getDataUrl());
+    request.setAttribute("secondaryLogoImage" , baseModel.getSecondaryLogoImage());
     request.setAttribute("lang", lang);
-    request.setAttribute("bootstrapCss", ServletListener.baseModel.getConf().getJsonConf().getBootstrapCss());
+    request.setAttribute("bootstrapCss", ttValConfig.getBootstrapCss());
+    request.setAttribute("htmlTitle", ttValConfig.getWebTitle());
+    request.setAttribute("devmode", "true".equalsIgnoreCase(ttValConfig.getDevmode()));
 
     // Test if we are starting a new session by calling the main url
     if (servletPath.endsWith("main")){
@@ -69,6 +73,12 @@ public class BootstrapUIServlet extends HttpServlet {
     }
     request.setAttribute("fileName", sigFile.getFileName());
     SignatureValidationReport signatureValidationReport = sigValHandler.verifySignature(defaultPolicy, sigFile.getFileName(), sigFile.getStorageFile());
+
+    if (signatureValidationReport == null) {
+      request.setAttribute("error", SigValError.nullResult.name());
+      forward("sigvalerror.jsp", request, response);
+      return;
+    }
 
     ResultPageDataFactory factory = new ResultPageDataFactory(signatureValidationReport, sigFile.getFileName(), lang);
     ResultPageData resultPageData = factory.getResultPageData();

@@ -50,7 +50,11 @@ public class TTvalConfig implements ConfigData {
             DefaultPolicy,
             logoFile,
             secondaryLogoFile,
-            bootstrapCss;
+            bootstrapCss,
+            webTitle,
+            noCacheRootList,
+            devmode;
+
 
     @Override
     public void setDefaults() {
@@ -65,6 +69,9 @@ public class TTvalConfig implements ConfigData {
         logoFile = "eduSign.svg";
         secondaryLogoFile = null;
         bootstrapCss="bootstrap.min.css";
+        webTitle="Signature validation";
+        noCacheRootList=null;
+        devmode=null;
     }
 
     @Override
@@ -114,5 +121,17 @@ public class TTvalConfig implements ConfigData {
 
     public String getBootstrapCss() {
         return bootstrapCss;
+    }
+
+    public String getWebTitle() {
+        return webTitle;
+    }
+
+    public String getNoCacheRootList() {
+        return noCacheRootList;
+    }
+
+    public String getDevmode() {
+        return devmode;
     }
 }

@@ -39,6 +39,7 @@ public class ContextParameters {
     private URL trustInfoUrl = null;
     private CrlCacheTable dbCrlCache = null;
     private String crlDirName = "", trustDirName = "";
+    private boolean noCacheRootList = false;
 
     /**
      * Constructor
@@ -91,6 +92,7 @@ public class ContextParameters {
         String enable = jsonConf.getEnableCaching();
         String verbose = jsonConf.getVerboseLogging();
         String trustUrl = jsonConf.getTrustinfoRUrl();
+        noCacheRootList = "true".equalsIgnoreCase(jsonConf.getNoCacheRootList());
 
         LOG.info("Loaded Sigval config from: " + dataDir);
 
@@ -119,6 +121,10 @@ public class ContextParameters {
         LOG.info("Testing trust info URL");
         try {
             trustInfoUrl = new URL(trustUrl);
+
+            // NOTE: This test is disabled. Those setting up the service must be responsible for applying a good URL
+            // In som instances it is relevant to setup connection to a host on the local vlan, which is incompatible with this test.
+/*
             String urlHost = trustInfoUrl.getHost();
             String urlScheme = trustInfoUrl.getProtocol();
             if (!urlHost.equalsIgnoreCase("localhost") && !urlScheme.equalsIgnoreCase("https")) {
@@ -132,9 +138,10 @@ public class ContextParameters {
 //                }
 //                LOG.info("Received valid rootlist xml file from: " + trustInfoUrl);
             }
+*/
         } catch (Exception ex) {
-            LOG.warning("Illegal trust information URL. Switching off caching");
-            enableCaching = false;
+            LOG.warning("Illegal trust information URL. Switching off rootlist caching");
+            noCacheRootList = true;
         }
 
         //Setup database connection
@@ -218,5 +225,9 @@ public class ContextParameters {
 
     public String getTrustDirName() {
         return trustDirName;
+    }
+
+    public boolean isNoCacheRootList() {
+        return noCacheRootList;
     }
 }
