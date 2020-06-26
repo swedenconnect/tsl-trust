@@ -41,14 +41,20 @@
 <body>
 <div class="container">
     <div class="card" style="margin-top: 10px">
-        <div class="card-header">
-            <img src="${logoImage}" alt="Logo" height="50">
+        <div class="card-header" style="text-align: center">
+            <h2>
+            <img align="left" src="${logoImage}" alt="Logo" height="50">
             <%
+                boolean devmode = (boolean) request.getAttribute("devmode");
+                if (devmode){
+                    out.print("<span style='margin-right: 115px'>(<span style='color: #FF500D'>Utveckling</span>)</span>");
+                }
                 LogoImage secondaryLogoImage = (LogoImage) request.getAttribute("secondaryLogoImage");
                 if (secondaryLogoImage != null) {
                     out.print("<img align='right' src='" + secondaryLogoImage.getDataUrl() + "' alt='Logo' height='50' >");
                 }
             %>
+            </h2>
         </div>
         <div class="card-body">
             <div style="float: right">
