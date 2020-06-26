@@ -93,6 +93,7 @@
                                 out.print(okIcn + " " + resultText.get("docOk"));
                                 break;
                             case unsigned:
+                            case novalidcoversdoc:
                             case invalid:
                                 out.print(nokIcn + " " + resultText.get(data.getStatus().name()));
                                 break;

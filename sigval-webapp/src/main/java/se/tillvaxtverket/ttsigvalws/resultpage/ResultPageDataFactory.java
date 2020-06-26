@@ -71,7 +71,8 @@ public class ResultPageDataFactory {
       .collect(Collectors.toList());
     resultPageData.setResultSignatureDataList(signatureData);
 
-    boolean oneSigCoversAlldata = signatureData.stream()
+    boolean oneValidSigCoversAlldata = signatureData.stream()
+      .filter(resultSignatureData -> resultSignatureData.getStatus().equals(SigValidStatus.ok))
       .filter(resultSignatureData -> resultSignatureData.isCoversAllData())
       .findFirst().isPresent();
     List<ResultSignatureData> validSignatures = signatureData.stream()
@@ -79,14 +80,21 @@ public class ResultPageDataFactory {
       .collect(Collectors.toList());
     int validSigCount = validSignatures.size();
     resultPageData.setValidSignatures(validSigCount);
-    if (validSigCount >0 && oneSigCoversAlldata) {
+    if (validSigCount >0 && oneValidSigCoversAlldata) {
       if (validSigCount == sigResultList.size()){
         resultPageData.setStatus(DocValidStatus.ok);
       } else {
         resultPageData.setStatus(DocValidStatus.someinvalid);
       }
     } else {
-      resultPageData.setStatus(DocValidStatus.invalid);
+      // No valid signature, or no valid signature coveres doc. Determine which
+      if (validSigCount > 0){
+        // There is a valid signature, but no valid signature covers the whole document
+        resultPageData.setStatus(DocValidStatus.novalidcoversdoc);
+      } else {
+        // There is no valid signature
+        resultPageData.setStatus(DocValidStatus.invalid);
+      }
     }
   }
 
@@ -110,7 +118,7 @@ public class ResultPageDataFactory {
 
     addAuthnContextResult(authContextExtData, builder);
 
-    if (signatureValidationContext.isSigValid() && signatureValidationContext.isCoversDoc()) {
+    if (signatureValidationContext.isSigValid()) {
       if (signatureValidationContext.isSigChainVerified()){
         builder.status(SigValidStatus.ok);
       } else {

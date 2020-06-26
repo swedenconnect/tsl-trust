@@ -77,7 +77,7 @@ public class PdfSigVerifier extends SigVerifier {
             for (CMSSigVerifyResult sig : resultList) {
                 SignatureValidationContext svc = new SignatureValidationContext();
                 svc.setSignatureName("Signature " + String.valueOf(sigIndex));
-                svc.setCoversDoc(true);
+                svc.setCoversDoc(sig.isCoversDoc());
                 svc.setRevision(0);
                 svc.setRevisions(0);
 
