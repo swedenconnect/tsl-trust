@@ -22,7 +22,7 @@
     <meta charset="UTF-8">
 
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="SUNET Sign Service Demo">
+    <meta name="description" content="Signature Validation Service">
     <meta name="author" content="stefan - Sweden Connect">
     <meta http-equiv='pragma' content='no-cache'>
     <meta http-equiv='cache-control' content='no-cache, no-store, must-revalidate'>
