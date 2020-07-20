@@ -47,8 +47,8 @@ public class ContextParameters {
      * @param servletContext servlet context information from the web.xml
      * deployment descriptor.
      */
-    public ContextParameters(ServletContext servletContext) {
-        extractContextParameters(servletContext);
+    public ContextParameters(ServletContext servletContext, String dataDir) {
+        extractContextParameters(servletContext, dataDir);
     }
 
     /**
@@ -56,9 +56,7 @@ public class ContextParameters {
      *
      * @param servletContext servlet context information
      */
-    private void extractContextParameters(ServletContext servletContext) {
-        String dataDir = servletContext.getInitParameter("DataDirectory");
-
+    private void extractContextParameters(ServletContext servletContext, String dataDir) {
         // set data directory
         enableCaching=true;
         if (dataDir != null && dataDir.length() > 0) {

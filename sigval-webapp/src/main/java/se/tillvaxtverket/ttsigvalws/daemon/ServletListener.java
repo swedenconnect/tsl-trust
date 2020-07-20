@@ -44,15 +44,16 @@ public class ServletListener implements ServletContextListener {
     static {
         // Remove any occurance of the BC provider
         Security.removeProvider("BC");
-        // Insert the BC provider in a preferred position
-        Security.insertProviderAt(new BouncyCastleProvider(), 1);
-        Security.insertProviderAt(new iaik.security.provider.IAIK(), 2);
+        Security.addProvider(new BouncyCastleProvider());
+        Security.insertProviderAt(new iaik.security.provider.IAIK(), 1);
         try {
-            SecurityManager secMan = new SecurityManager();
-            secMan.checkSetFactory();
+            //Removed as this cased problems and prevented contenthandler from loading. Seems to work well without this check.
+            //SecurityManager secMan = new SecurityManager();
+            //secMan.checkSetFactory();
             HttpURLConnection.setContentHandlerFactory(new OCSPContentHandlerFactory());
             LOG.info("Setting URL Content handler factory to OCSPContentHandlerFactory");
         } catch (Exception ex) {
+            ex.printStackTrace();
             LOG.warning("Error when setting URL content handler factory");
         }
     }
@@ -79,7 +80,7 @@ public class ServletListener implements ServletContextListener {
 
             //Init Daemon
             LOG.info("Sigval Servlet - initializing context parameters");
-            ContextParameters contextParams = new ContextParameters(servletContext);
+            ContextParameters contextParams = new ContextParameters(servletContext, dataDir);
             LOG.info("Sigval Servlet - context parameters initlized");
             if (daemonTask == null && contextParams.isEnableCaching()) {
                 LOG.info("Valid context parameters - starting daemon");
@@ -95,5 +96,9 @@ public class ServletListener implements ServletContextListener {
             daemonTask.stopDaemon();
             daemonTask = null;
         }
+    }
+
+    public static class ExtendedSecurityManager extends SecurityManager {
+
     }
 }
