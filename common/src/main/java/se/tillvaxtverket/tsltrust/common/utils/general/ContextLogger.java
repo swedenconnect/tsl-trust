@@ -16,23 +16,11 @@
  */
 package se.tillvaxtverket.tsltrust.common.utils.general;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.logging.Formatter;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
-import java.util.logging.StreamHandler;
-import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
+import java.util.logging.*;
 
 /**
  * Class holding a customized logger based on the Logger class.
@@ -49,7 +37,6 @@ import javax.swing.text.Document;
 public final class ContextLogger extends Logger implements Observer, ObserverConstants {
     
     static final String LF = System.getProperty("line.separator");
-    private JTextPane pane;
     private Formatters formatters = new Formatters();
     private Publisher publisher = new Publisher();
 
@@ -90,18 +77,7 @@ public final class ContextLogger extends Logger implements Observer, ObserverCon
         addObservers();
     }
 
-    /**
-     * Creating a logger with a default publishing target
-     * @param name The name of the logger
-     * @param target Target JTextPane for publishing log messages.
-     */
-    public ContextLogger(String name, JTextPane target) {
-        super(name, null);
-        setLevel(Level.ALL);
-        addObservers();
-        setTarget(target);
-    }
-    
+
     private void addObservers() {
         formatters.addObserver(this);
     }
@@ -136,56 +112,7 @@ public final class ContextLogger extends Logger implements Observer, ObserverCon
             removeHandler(h);
         }
     }
-    
-    public void setTarget(JTextPane textComponent) {
-        setTarget(textComponent, formatters.coreFormatter());
-    }
-    
-    public void setTarget(JTextPane textComponent, Formatter formatter) {
-        pane = textComponent;
-        OutputStream out = new OutputStream() {
-            
-            @Override
-            public void write(final int b) throws IOException {
-                updateTextPane(String.valueOf((char) b));
-            }
-            
-            @Override
-            public void write(byte[] b, int off, int len) throws IOException {
-                updateTextPane(new String(b, off, len));
-            }
-            
-            @Override
-            public void write(byte[] b) throws IOException {
-                write(b, 0, b.length);
-            }
-        };
-        Handler logHandler = new StreamHandler(out, formatter);
-        addHandler(logHandler);
-    }
-    
-    private void updateTextPane(final String text) {
-        SwingUtilities.invokeLater(new Runnable() {
-            
-            public void run() {
-                Document doc = pane.getDocument();
-                try {
-                    doc.insertString(doc.getLength(), text, null);
-                } catch (BadLocationException e) {
-                    throw new RuntimeException(e);
-                }
-                pane.setCaretPosition(doc.getLength() - 1);
-            }
-        });
-    }
-    
-    public void clearTargetPane() {
-        if (pane == null) {
-            return;
-        }
-        pane.setText("");
-    }
-    
+
     public void update(Observable o, Object arg) {
         if (o instanceof Formatters) {
             if (arg.equals(COMPLETE)) {

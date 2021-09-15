@@ -120,6 +120,10 @@ public class DaemonTask extends ServletDaemon {
     }
 
     private void cachePolicyRoots() {
+        if (contextParams.isNoCacheRootList()){
+            LOG.info("No-cache of rootlist is set. Using local file");
+            return;
+        }
         DerefUrl.downloadFile(contextParams.getTrustInfoUrl(), rootXmlFile);
         log("Caching Trust Anchor List");
         initialized = true;

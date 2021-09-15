@@ -16,7 +16,14 @@
  */
 package se.tillvaxtverket.ttsigvalws.daemon;
 
+import iaik.x509.ocsp.net.OCSPContentHandlerFactory;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.config.ConfigData;
+import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.models.SigValidationBaseModel;
+
+import java.net.HttpURLConnection;
 import java.security.Security;
+import java.util.Locale;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -28,11 +35,27 @@ import javax.servlet.ServletContextListener;
 public class ServletListener implements ServletContextListener {
 
     private static final Logger LOG = Logger.getLogger(ServletListener.class.getName());
-    private static final String SERVLET_PATH = "/TTSigvalService";
+    private static final String SERVLET_PATH_ENV = "SERVLET_PATH";
+    private static final String DATA_LOCATION_ENV = "SIGVAL_DATALOCATION";
+    private static final String defaultServletPath = "/sigval";
+    public static SigValidationBaseModel baseModel;
     private ServletDaemon daemonTask = null;
 
     static {
-        Security.insertProviderAt(new iaik.security.provider.IAIK(), 2);
+        // Remove any occurance of the BC provider
+        Security.removeProvider("BC");
+        Security.addProvider(new BouncyCastleProvider());
+        Security.insertProviderAt(new iaik.security.provider.IAIK(), 1);
+        try {
+            //Removed as this cased problems and prevented contenthandler from loading. Seems to work well without this check.
+            //SecurityManager secMan = new SecurityManager();
+            //secMan.checkSetFactory();
+            HttpURLConnection.setContentHandlerFactory(new OCSPContentHandlerFactory());
+            LOG.info("Setting URL Content handler factory to OCSPContentHandlerFactory");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            LOG.warning("Error when setting URL content handler factory");
+        }
     }
 
     @Override
@@ -41,11 +64,23 @@ public class ServletListener implements ServletContextListener {
         ServletContext servletContext = sce.getServletContext();
         String contextPath = servletContext.getContextPath();
         contextPath = (contextPath == null) ? "null" : contextPath;
-        LOG.info("Sigval Servlet - found context path: " + contextPath);
-        if (contextPath.equals(SERVLET_PATH)) {
+        String envServletPath = System.getenv(SERVLET_PATH_ENV);
+        String servletPath = envServletPath == null ? defaultServletPath: envServletPath;
+
+        if (contextPath.equals(servletPath)) {
+            LOG.info("Sigval Servlet - found context path: " + contextPath);
+            // Init models
+
+            String envDataLocation = System.getenv(DATA_LOCATION_ENV);
+            String dataDir = envDataLocation == null ? servletContext.getInitParameter("DataDirectory") : envDataLocation;
+
+            ConfigData conf = new ConfigData(dataDir);
+            baseModel = new SigValidationBaseModel(conf);
+            Locale.setDefault(new Locale(baseModel.getConf().getLanguageCode()));
+
             //Init Daemon
             LOG.info("Sigval Servlet - initializing context parameters");
-            ContextParameters contextParams = new ContextParameters(servletContext);
+            ContextParameters contextParams = new ContextParameters(servletContext, dataDir);
             LOG.info("Sigval Servlet - context parameters initlized");
             if (daemonTask == null && contextParams.isEnableCaching()) {
                 LOG.info("Valid context parameters - starting daemon");
@@ -61,5 +96,9 @@ public class ServletListener implements ServletContextListener {
             daemonTask.stopDaemon();
             daemonTask = null;
         }
+    }
+
+    public static class ExtendedSecurityManager extends SecurityManager {
+
     }
 }

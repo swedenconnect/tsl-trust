@@ -200,12 +200,14 @@ public class CertificationAuthority implements CaKeyStoreConstants {
                 
                 switch (ext.getExtensionType()){
                     case cRLDistributionPoints:
-                    case basicConstraints:
                     case authorityInfoAccess:
                     case authorityKeyIdentifier:
                     case policyConstraints:
                     case policyMappings:
                     case qCStatements:
+                        break;
+                    case basicConstraints:
+                        extList.add(new Extension(Extension.basicConstraints, false, new BasicConstraints(true).getEncoded("DER")));
                         break;
                     default:
                         if (ext.getOid().getId().equalsIgnoreCase("1.3.6.1.4.1.8301.3.5")){

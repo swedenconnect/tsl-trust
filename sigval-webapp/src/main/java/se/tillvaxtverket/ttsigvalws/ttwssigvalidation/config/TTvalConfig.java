@@ -46,7 +46,15 @@ public class TTvalConfig implements ConfigData {
             VerboseLogging,
             TrustinfoRUrl,
             Language,
-            SignatureValidationTimeoutSeconds;
+            SignatureValidationTimeoutSeconds,
+            DefaultPolicy,
+            logoFile,
+            secondaryLogoFile,
+            bootstrapCss,
+            webTitle,
+            noCacheRootList,
+            devmode;
+
 
     @Override
     public void setDefaults() {
@@ -57,6 +65,13 @@ public class TTvalConfig implements ConfigData {
         TrustinfoRUrl = "http://localhost/~stefan/tsltrust/rootlist.xml";
         Language = "en";
         SignatureValidationTimeoutSeconds = "30";
+        DefaultPolicy = "AllEUTrustServices";
+        logoFile = "eduSign.svg";
+        secondaryLogoFile = null;
+        bootstrapCss="bootstrap.min.css";
+        webTitle="Signature validation";
+        noCacheRootList=null;
+        devmode=null;
     }
 
     @Override
@@ -91,5 +106,32 @@ public class TTvalConfig implements ConfigData {
     public String getSignatureValidationTimeoutSeconds() {
         return SignatureValidationTimeoutSeconds;
     }
-    
+
+    public String getDefaultPolicy() {
+        return DefaultPolicy;
+    }
+
+    public String getLogoFile() {
+        return logoFile;
+    }
+
+    public String getSecondaryLogoFile() {
+        return secondaryLogoFile;
+    }
+
+    public String getBootstrapCss() {
+        return bootstrapCss;
+    }
+
+    public String getWebTitle() {
+        return webTitle;
+    }
+
+    public String getNoCacheRootList() {
+        return noCacheRootList;
+    }
+
+    public String getDevmode() {
+        return devmode;
+    }
 }

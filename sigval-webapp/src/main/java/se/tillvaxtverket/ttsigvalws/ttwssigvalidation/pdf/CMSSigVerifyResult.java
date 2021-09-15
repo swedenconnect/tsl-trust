@@ -31,6 +31,7 @@ public class CMSSigVerifyResult {
     private List<X509Certificate> certList = new ArrayList<>();
     private String status = "";
     private boolean valid = false;
+    private boolean coversDoc = false;
     private byte[] signedData;
     private boolean pades;
     private boolean padesVerified;
@@ -203,4 +204,11 @@ public class CMSSigVerifyResult {
         this.timStampResultList = timStampResultList;
     }
 
+    public boolean isCoversDoc() {
+        return coversDoc;
+    }
+
+    public void setCoversDoc(boolean coversDoc) {
+        this.coversDoc = coversDoc;
+    }
 }

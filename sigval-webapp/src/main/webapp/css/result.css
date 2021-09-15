@@ -1,0 +1,50 @@
+.icon-ok {
+
+}
+
+.icon-ok{
+    color: #1c7430;
+}
+
+.icon-error{
+    color: #6e001d;
+}
+
+.icon-warning{
+    color: #c69500;
+}
+
+td.attr-td{
+    width: 220px;
+    font-weight: bold;
+}
+
+td.sig-res-param{
+    width: 220px;
+    font-weight: bold;
+}
+
+td.overall-param{
+    width: 240px;
+    font-weight: bold;
+}
+
+.metadata-panel{
+    float: left;
+    left: 10%;
+    position: absolute;
+    top: 3%;
+    width: 80%;
+}
+
+.confirm-bgr{
+    background-color: rgba(0, 0, 0, 0.3);
+    bottom: 0;
+    left: 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 99;
+    display: none;
+
+}

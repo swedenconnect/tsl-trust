@@ -16,42 +16,23 @@
  */
 package se.tillvaxtverket.ttsigvalws.ttwebservice;
 
-import iaik.x509.ocsp.net.OCSPContentHandlerFactory;
-import java.io.File;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.nio.charset.Charset;
-import java.security.KeyStore;
-import java.security.Security;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import se.tillvaxtverket.tsltrust.common.utils.general.FilenameFilterImpl;
+import se.tillvaxtverket.ttsigvalws.daemon.ServletListener;
+import se.tillvaxtverket.ttsigvalws.resultpage.SigFile;
+
 import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import se.tillvaxtverket.tsltrust.common.utils.core.Base64Coder;
-import se.tillvaxtverket.tsltrust.common.utils.general.FilenameFilterImpl;
-import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.config.ConfigData;
-import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.document.SigDocument;
-import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.marshaller.SignatureValidationReport;
-import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.models.SigValidationBaseModel;
-import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.models.SigValidationModel;
-import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.sigVerify.SigVerifier;
-import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.sigVerify.SigVerifierFactory;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Servlet for provision of signature validation services based on TSL Trust
@@ -60,33 +41,11 @@ import se.tillvaxtverket.ttsigvalws.ttwssigvalidation.sigVerify.SigVerifierFacto
 public class TTSigValServlet extends HttpServlet {
 
     private static final Logger LOG = Logger.getLogger(TTSigValServlet.class.getName());
-    private static final String SERVER_DOC_FOLDER = "serverdocs";
-    private ServletContext context;
-    private SigValidationBaseModel baseModel;
-    private String currentDir = System.getProperty("user.dir");
-    private ResourceBundle infoText;
+    private SigValHandler sigValHandler;
 
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-        this.context = config.getServletContext();
-        // Remove any occurance of the BC provider
-        Security.removeProvider("BC");
-        // Insert the BC provider in a preferred position
-        Security.insertProviderAt(new BouncyCastleProvider(), 1);
-        try {
-            SecurityManager secMan = new SecurityManager();
-            secMan.checkSetFactory();
-            HttpURLConnection.setContentHandlerFactory(new OCSPContentHandlerFactory());
-            LOG.info("Setting URL Content handler factory to OCSPContentHandlerFactory");
-        } catch (Exception ex) {
-            LOG.warning("Error when setting URL content handler factory");
-        }
-        infoText = ResourceBundle.getBundle("infoText");
-        LOG.info(currentDir);
-        String dataDir = context.getInitParameter("DataDirectory");
-        ConfigData conf = new ConfigData(dataDir);
-        baseModel = new SigValidationBaseModel(conf);
-        Locale.setDefault(new Locale(baseModel.getConf().getLanguageCode()));
+    @Override public void init(ServletConfig servletConfig) throws ServletException {
+        super.init(servletConfig);
+        sigValHandler = new SigValHandler();
     }
 
     /**
@@ -106,7 +65,7 @@ public class TTSigValServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
         Locale respLocale = Locale.getDefault();
-        baseModel.refreshTrustStore();
+        ServletListener.baseModel.refreshTrustStore();
         boolean isMultipart = ServletFileUpload.isMultipartContent(request);
         if (isMultipart) {
             processFileUpload(request, response);
@@ -123,26 +82,6 @@ public class TTSigValServlet extends HttpServlet {
             response.setContentType("text/html;charset=UTF-8");
             String authType = (request.getAuthType() == null) ? "" : request.getAuthType();
             response.getWriter().write("<logout>" + authType.toLowerCase() + "</logout>");
-        }
-
-        if (action.equals("authdata")) {
-            response.setContentType("text/xml;charset=UTF-8");
-            response.setHeader("Cache-Control", "no-cache");
-            StringBuilder b = new StringBuilder();
-            String authType = request.getAuthType();
-            String remoteUser = utf8(request.getRemoteUser());
-            if (authType != null && remoteUser != null) {
-                b.append("<remoteUser type=\"").append(authType).append("\">");
-                b.append(remoteUser).append("</remoteUser>");
-                b.append("<authContext>");
-                b.append(getAuthContext(request));
-                b.append("</authContext>");
-                b.append("<userAttributes>");
-                b.append(getAuthAttributes(request));
-                b.append("</userAttributes>");
-            }
-            String authResponse = "<authData>" + b.toString() + "</authData>";
-            response.getWriter().write(authResponse);
         }
 
         if (action.equals("policylist")) {
@@ -170,7 +109,7 @@ public class TTSigValServlet extends HttpServlet {
         }
 
         if (action.equals("verify")) {
-            String verifyResult = verifyServerDocSignature(request);
+            String verifyResult = sigValHandler.verifyServerDocSignature(request);
             if (verifyResult != null) {
                 response.setContentType("text/xml;charset=UTF-8");
                 response.setHeader("Cache-Control", "no-cache");
@@ -181,7 +120,7 @@ public class TTSigValServlet extends HttpServlet {
             return;
         }
         if (action.equals("postverify")) {
-            processValidationPost(request, response);
+            sigValHandler.processValidationPost(request, response);
             return;
         }
     }
@@ -230,7 +169,7 @@ public class TTSigValServlet extends HttpServlet {
     private String getPolicyData() {
         StringBuilder sb = new StringBuilder();
 
-        List<String> rootNames = baseModel.getTrustStore().getRootNames();
+        List<String> rootNames = ServletListener.baseModel.getTrustStore().getRootNames();
         if (rootNames != null) {
             for (String pn : rootNames) {
                 sb.append("<policy>");
@@ -263,9 +202,9 @@ public class TTSigValServlet extends HttpServlet {
 
     private List<String> getAvailableSignedDocuments() {
         List<String> sigFiles = new ArrayList<String>();
-        File caDir = new File(baseModel.getConf().getDataDirectory(), SERVER_DOC_FOLDER);
-        if (caDir.canRead()) {
-            File[] fileList = caDir.listFiles(new FilenameFilterImpl("."));
+        File serverDocDir = new File(ServletListener.baseModel.getConf().getDataDirectory(), ServletListener.baseModel.getDocumentFolderName());
+        if (serverDocDir.canRead()) {
+            File[] fileList = serverDocDir.listFiles(new FilenameFilterImpl("."));
             if (fileList.length > 0) {
                 for (File listedFile : fileList) {
                     String lfName = listedFile.getName().toLowerCase();
@@ -287,170 +226,13 @@ public class TTSigValServlet extends HttpServlet {
         return sigFiles;
     }
 
-    private String verifyServerDocSignature(HttpServletRequest request) {
-        try {
-            String sigFileName = getRequestFileName(request);
-            String docName = request.getParameter("id");
-            String policyName = request.getParameter("policy");
-            policyName = policyName == null ? "" : policyName;
-
-            return verifySignature(request, policyName, docName, sigFileName, null);
-        } catch (Exception ex) {
-        }
-        return "";
-
-    }
-
-    private String verifySignature(HttpServletRequest request, String policyName, String docName, String sigFileName, byte[] sigBytes) {
-        SigValidationModel model;
-        Thread verifierTask;
-
-        model = new SigValidationModel();
-        model.setBaseModel(baseModel);
-        SigDocument sigDoc = null;
-        if (sigBytes == null) {
-            sigDoc = new SigDocument(new File(sigFileName));
-            model.setSigDocument(sigDoc);
-        } else {
-            sigDoc = new SigDocument(sigBytes);
-            model.setSigDocument(sigDoc);
-        }
-        String pName = (policyName == null) ? "" : policyName;
-        model.setPolicyName(pName);
-        sigDoc.setDocName(docName == null ? "" : docName);
-        String policyDesc;
-        try {
-            policyDesc = baseModel.getTrustStore().getPolicyDescMap().get(pName);
-            model.setPolicyDescription(policyDesc);
-        } catch (Exception ex) {
-        }
-        model.setCheckOcspAndCrl(false);
-        model.setPrefSpeed(true);
-
-        KeyStore keyStore = baseModel.getTrustStore().getKeyStore(pName);
-
-        if (keyStore != null) {
-            SigVerifier verifier = SigVerifierFactory.getSigVerifier(model);
-            if (verifier != null) {
-                try {
-                    //Verify Signature
-                    verifierTask = new Thread(verifier);
-                    verifierTask.start();
-                    verifierTask.join();
-                    SignatureValidationReport report = new SignatureValidationReport(model);
-                    return report.generateReport();
-                } catch (InterruptedException ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                }
-            }
-        }
-        return null;
-    }
-
-    private String getRequestFileName(HttpServletRequest request) {
-        return getFullSigFileName(request.getParameter("id"));
-    }
-
-    private String getFullSigFileName(String formFileName) {
-        String fileName = "";
-        File serverDocsDir = new File(baseModel.getConf().getDataDirectory(), SERVER_DOC_FOLDER);
-        if (serverDocsDir.canRead()) {
-            File[] fileList = serverDocsDir.listFiles(new FilenameFilterImpl("."));
-            for (File listedFile : fileList) {
-                if (listedFile.getName().equalsIgnoreCase(formFileName)) {
-                    fileName = listedFile.getAbsolutePath();
-                }
-            }
-        }
-        return fileName;
-    }
-
-    private String getAuthContext(HttpServletRequest request) {
-        StringBuilder b = new StringBuilder();
-
-        /**
-         * Shib-Application-ID The applicationId property derived for the
-         * request. Shib-Session-ID The internal session key assigned to the
-         * session associated with the request. Shib-Identity-Provider The
-         * entityID of the IdP that authenticated the user associated with the
-         * request. Shib-Authentication-Instant The ISO timestamp provided by
-         * the IdP indicating the time of authentication.
-         * Shib-Authentication-Method The AuthenticationMethod or
-         * <AuthnContextClassRef> value supplied by the IdP, if any.
-         * Shib-AuthnContext-Class The AuthenticationMethod or
-         * <AuthnContextClassRef> value supplied by the IdP, if any.
-         * Shib-AuthnContext-Decl The <AuthnContextDeclRef> value supplied by
-         * the IdP, if any.
-         */
-        String[] shibAttrIds = new String[]{"Shib-Application-ID", "Shib-Session-ID", "Shib-Identity-Provider", "Shib-Authentication-Instant",
-            "Shib-Authentication-Method", "Shib-AuthnContext-Class", "Shib-AuthnContext-Decl"};
-
-        for (String id : shibAttrIds) {
-            String attribute = (String) request.getAttribute(id);
-            if (attribute != null) {
-                attribute = utf8(attribute);
-                b.append("<context type=\"").append(id).append("\">");
-                b.append(attribute).append("</context>");
-            }
-        }
-
-        return b.toString();
-    }
-
-    private String getAuthAttributes(HttpServletRequest request) {
-        StringBuilder b = new StringBuilder();
-
-        //Get user attributes
-        String[] attrIds = new String[]{"displayName", "cn", "initials", "sn", "givenName", "norEduPersonNIN", "personalIdentityNumber", "mail",
-            "telephoneNumber", "mobileTelephoneNumber", "eppn", "persistent-id", "o", "ou", "departmentNumber", "employeeNumber", "employeeType", "title", "description",
-            "affiliation", "entitlement", "street", "postOfficeBox", "postalCode", "st", "l", "preferredLanguage"};
-
-        for (String id : attrIds) {
-            String attribute = (String) request.getAttribute(id);
-
-            if (attribute != null) {
-
-                String full = utf8(attribute);
-                String[] values = full.split(";");
-                for (String attr : values) {
-                    String attrLabel = (infoText.containsKey(id)) ? infoText.getString(id) : id;
-                    b.append("<attribute type=\"").append(attrLabel).append("\">");
-                    b.append(attr).append("</attribute>");
-                }
-            }
-        }
-
-        return b.toString();
-    }
-
-    private String utf8(String isoStr) {
-        if (isoStr == null) {
-            return "";
-        }
-        byte[] bytes = isoStr.getBytes(Charset.forName("ISO-8859-1"));
-        return new String(bytes, Charset.forName("UTF-8"));
-    }
-
-    private void checkEncoding(byte[] attrBytes) {
-        SortedMap<String, Charset> availableCharsets = Charset.availableCharsets();
-        Set<String> keySet = availableCharsets.keySet();
-        List<String> charsets = new ArrayList<String>();
-        List<String> decoded = new ArrayList<String>();
-        for (String key : keySet) {
-            Charset cs = availableCharsets.get(key);
-            charsets.add(key);
-            decoded.add(new String(attrBytes, cs));
-        }
-        int i = 0;
-    }
-
     private void processFileUpload(HttpServletRequest request, HttpServletResponse response) {
         // Create a factory for disk-based file items
         Map<String, String> paraMap = new HashMap<String, String>();
-        File uploadedFile = null;
+        SigFile sigFile = null;
         boolean uploaded = false;
         DiskFileItemFactory factory = new DiskFileItemFactory();
-        File storageDir = new File(baseModel.getConf().getDataDirectory() + "/uploads");
+        File storageDir = new File(ServletListener.baseModel.getConf().getDataDirectory() + "/uploads");
         if (!storageDir.exists()) {
             storageDir.mkdirs();
         }
@@ -472,13 +254,12 @@ public class TTSigValServlet extends HttpServlet {
                     String contentType = item.getContentType();
                     boolean isInMemory = item.isInMemory();
                     long sizeInBytes = item.getSize();
-                    uploadedFile = new File(storageDir, fileName);
+                    sigFile = new SigFile(fileName);
+                    File uploadedFile = sigFile.getStorageFile();
                     try {
-                        if (uploadedFile.exists()){
-                            uploadedFile.delete();
-                        }
                         item.write(uploadedFile);
                         uploaded = true;
+                        uploadedFile.deleteOnExit();
                     } catch (Exception ex) {
                       ex.printStackTrace();
                     }
@@ -486,57 +267,21 @@ public class TTSigValServlet extends HttpServlet {
 
             }
             if (uploaded && paraMap.containsKey("policy")) {
-                String verifyResult = verifySignature(request, paraMap.get("policy"), uploadedFile.getName(), uploadedFile.getAbsolutePath(), null);
-                sendValidationReport(verifyResult, response);
+                String verifyResult = sigValHandler.verifySignature(paraMap.get("policy"), sigFile.getFileName(), sigFile.getStorageFile()).generateReport();
+                sigFile.getStorageFile().delete();
+                sigValHandler.sendValidationReport(verifyResult, response);
                 return;
             }
             if (paraMap.containsKey("policy") && paraMap.containsKey("fileName")) {
-                File sigFile = new File(getFullSigFileName(paraMap.get("fileName")));
-                String verifyResult = verifySignature(request, paraMap.get("policy"), sigFile.getName(), sigFile.getAbsolutePath(), null);
-                sendValidationReport(verifyResult, response);
+                File serverSigFile = new File(sigValHandler.getFullSigFileName(paraMap.get("fileName")));
+                String verifyResult = sigValHandler.verifySignature(paraMap.get("policy"), serverSigFile.getName(), serverSigFile).generateReport();
+                sigValHandler.sendValidationReport(verifyResult, response);
                 return;
             }
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
-        nullResponse(response);
+        SigValHandler.nullResponse(response);
     }
 
-    private static void nullResponse(HttpServletResponse response) {
-        try {
-            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-            response.getWriter().write("");
-            response.getWriter().close();
-        } catch (Exception ex) {
-        }
-    }
-
-    private void processValidationPost(HttpServletRequest request, HttpServletResponse response) {
-        try {
-            String dataStr = request.getParameter("data");
-            String docName = request.getParameter("id");
-            String policy = request.getParameter("policy");
-            byte[] docBytes = Base64Coder.decode(dataStr);
-            String verifyResult = verifySignature(request, policy, docName, null, docBytes);
-            sendValidationReport(verifyResult, response);
-        } catch (Exception ex) {
-            nullResponse(response);
-        }
-    }
-
-    private void sendValidationReport(String verifyResult, HttpServletResponse response) {
-        if (verifyResult != null) {
-            response.setContentType("text/xml;charset=UTF-8");
-            response.setHeader("Cache-Control", "no-cache");
-            try {
-                response.getWriter().write(verifyResult);
-                return;
-            } catch (IOException ex) {
-                nullResponse(response);
-            }
-        } else {
-            nullResponse(response);
-        }
-
-    }
 }

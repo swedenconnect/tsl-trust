@@ -68,6 +68,6 @@
         <img src="img/architecture.png" height="550">
         <br />
         <br />
-        <a href="index.jsp">Back to signature validation</a>        
+        <a href="legacy.jsp">Back to signature validation</a>
     </body>
 </html>

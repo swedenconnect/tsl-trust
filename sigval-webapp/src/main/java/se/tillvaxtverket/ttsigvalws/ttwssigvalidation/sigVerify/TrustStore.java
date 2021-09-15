@@ -117,11 +117,12 @@ public final class TrustStore {
             PKCS7CertList p7b = new PKCS7CertList(in);
             X509Certificate[] certs = p7b.getCertificateList();
 
-
-            for (int i = 0; i < certs.length; i++) {
-                X509Certificate cert = certs[i];
-                String alias = "ICA" + String.valueOf(i);
-                ks.setCertificateEntry(alias, KsCertFactory.getCertificate(cert));
+            if (certs != null) {
+                for (int i = 0; i < certs.length; i++) {
+                    X509Certificate cert = certs[i];
+                    String alias = "ICA" + String.valueOf(i);
+                    ks.setCertificateEntry(alias, KsCertFactory.getCertificate(cert));
+                }
             }
             ksMap.put(name, ks);
         }
