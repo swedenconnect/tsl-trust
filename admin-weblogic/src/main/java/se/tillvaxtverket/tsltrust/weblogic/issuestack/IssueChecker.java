@@ -54,6 +54,9 @@ public class IssueChecker {
     }
 
     private static TSLIssueSubcode checkDateForExpiry(Date expiryDate, int triggerDays) {
+        if (expiryDate == null) {
+            return TSLIssueSubcode.expired;
+        }
         Calendar expiryTime = Calendar.getInstance();
         expiryTime.setTime(expiryDate);
         Calendar triggerTime = Calendar.getInstance();

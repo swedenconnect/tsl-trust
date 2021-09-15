@@ -761,8 +761,8 @@ public class TslExtractorWeb implements HtmlConstants, TTConstants {
             } catch (Exception ex) {
             }
             String sigStatus = tm.getSignStatus();
-            String issueDate = DATE_FORMAT.format((tsl.getIssueDate()));
-            String expiryDate = DATE_FORMAT.format((tsl.getNextUpdate()));
+            String issueDate = getDateString(tsl.getIssueDate());
+            String expiryDate = getDateString(tsl.getNextUpdate());
             String sequenceNumber = tsl.getSequenceNumber().toString();
             String qcTspCount = getCount(territory, qcTspMap);
             String serviceCount = getCount(territory, serviceMap);
@@ -772,7 +772,7 @@ public class TslExtractorWeb implements HtmlConstants, TTConstants {
             try {
                 AaaCertificate usedTslSigCert = new AaaCertificate(tm.getUsedTslSigCert().getEncoded());
                 Date certExpiry = usedTslSigCert.getNotAfter();
-                tslSigCertExpiry = DATE_FORMAT.format(certExpiry);
+                tslSigCertExpiry = getDateString(certExpiry);
                 if (certExpiry.before(new Date())) {
                     error[9] = 3;
                 }
@@ -780,7 +780,7 @@ public class TslExtractorWeb implements HtmlConstants, TTConstants {
             }
 
             //Validate data
-            if (tsl.getNextUpdate().before(new Date())) {
+            if (tsl.getNextUpdate() == null || tsl.getNextUpdate().before(new Date())) {
                 error[4] = 3;
             }
             if (sigStatus.equals(SIGNSTATUS_VERIFIED)) {
@@ -876,7 +876,7 @@ public class TslExtractorWeb implements HtmlConstants, TTConstants {
         }, termsClasses, new boolean[]{});
         termsTable.addRow(new String[]{
             "Alerts",
-            "Issues causing an alert E-mail to be sent to the Scheme Operator. Issue types are: "
+            "Issue types are: "
             + getQuotedSpan("unknownSigCert", ERROR) + " (Signature cert is not on the EU list), "
             + getQuotedSpan("unsigned", ERROR) + " (TSL is unsigned), "
             + getQuotedSpan("sigSyntax", ERROR) + " (TSL Signature has structural errors), "
@@ -891,6 +891,12 @@ public class TslExtractorWeb implements HtmlConstants, TTConstants {
         overviewDiv.addHtmlElement(termsTable);
 
         return overviewDiv;
+    }
+
+    private String getDateString(Date date) {
+        return date == null
+          ? "NULL"
+          : DATE_FORMAT.format(date);
     }
 
     private String getQuotedSpan(String text, String className) {

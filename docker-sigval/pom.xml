@@ -6,7 +6,7 @@
 
     <groupId>se.idsec.signservice</groupId>
     <artifactId>sigservice-docker</artifactId>
-    <version>1.0</version>
+    <version>1.0.1</version>
 
     <developers>
         <developer>
@@ -26,7 +26,7 @@
     <properties>
         <tomcat.version>9.0.36</tomcat.version>
         <docker.image.prefix>docker.eidastest.se:5000</docker.image.prefix>
-        <sigval.version>1.6.2-SNAPSHOT</sigval.version>
+        <sigval.version>1.6.2</sigval.version>
     </properties>
 
     <repositories>
