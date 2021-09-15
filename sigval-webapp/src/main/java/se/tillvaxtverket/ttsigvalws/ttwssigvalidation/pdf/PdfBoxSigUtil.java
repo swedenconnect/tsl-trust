@@ -37,24 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1GeneralizedTime;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
-import org.bouncycastle.asn1.DERPrintableString;
-import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
@@ -116,7 +99,7 @@ public class PdfBoxSigUtil {
 
         //New variables
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        DEROutputStream dout = new DEROutputStream(bout);
+        ASN1OutputStream dout = ASN1OutputStream.create(bout, ASN1Encoding.DER);
         ASN1EncodableVector npkcs7 = new ASN1EncodableVector();
         ASN1EncodableVector nsd = new ASN1EncodableVector();
         ASN1EncodableVector nsi = new ASN1EncodableVector();
@@ -362,7 +345,7 @@ public class PdfBoxSigUtil {
         digestInfoSeq.add(new DEROctetString(hashValue));
 
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        DEROutputStream dout = new DEROutputStream(bout);
+        ASN1OutputStream dout = ASN1OutputStream.create(bout, ASN1Encoding.DER);
         dout.writeObject((new DERSequence(digestInfoSeq)));
         byte[] digestInfoBytes = bout.toByteArray();
         dout.close();
@@ -518,7 +501,7 @@ public class PdfBoxSigUtil {
 
         //Der encode the new signed attributes set
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        DEROutputStream dout = new DEROutputStream(bout);
+        ASN1OutputStream dout = ASN1OutputStream.create(bout, ASN1Encoding.DER);
         dout.writeObject(new DERSet(newSigAttrSet));
         byte[] newSigAttr = bout.toByteArray();
         dout.close();
