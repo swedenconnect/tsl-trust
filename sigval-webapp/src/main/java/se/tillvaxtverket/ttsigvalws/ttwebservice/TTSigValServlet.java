@@ -321,7 +321,7 @@ public class TTSigValServlet extends HttpServlet {
             model.setPolicyDescription(policyDesc);
         } catch (Exception ex) {
         }
-        model.setCheckOcspAndCrl(false);
+        model.setCheckOcspAndCrl(true);
         model.setPrefSpeed(true);
 
         KeyStore keyStore = baseModel.getTrustStore().getKeyStore(pName);
