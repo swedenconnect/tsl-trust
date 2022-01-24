@@ -82,7 +82,7 @@ public class SigValHandler {
       model.setPolicyDescription(policyDesc);
     } catch (Exception ex) {
     }
-    model.setCheckOcspAndCrl(false);
+    model.setCheckOcspAndCrl(true);
     model.setPrefSpeed(true);
 
     KeyStore keyStore = ServletListener.baseModel.getTrustStore().getKeyStore(pName);

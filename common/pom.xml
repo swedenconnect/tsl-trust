@@ -9,7 +9,8 @@
     </parent>
     <name>TSL Trust - Common</name>
     <artifactId>common</artifactId>
-    
+    <version>1.7.0-SNAPSHOT</version>
+
     <packaging>jar</packaging>
     <url>http://maven.apache.org</url>
     <properties>
@@ -26,6 +27,34 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.xmlbeans</groupId>
+                <artifactId>xmlbeans</artifactId>
+                <version>5.0.3</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <download>false</download>
+                    <!--<repackage>se.swedenconnect.sigvaltrust.xmlbeans</repackage>-->
+                    <mdefNamespaces>urn:oasis:names:tc:SAML:2.0:assertion</mdefNamespaces>
+                    <mdefNamespaces>http://www.w3.org/2000/09/xmldsig#</mdefNamespaces>
+                    <mdefNamespaces>http://www.w3.org/2001/04/xmlenc#</mdefNamespaces>
+                    <mdefNamespaces>http://uri.etsi.org/02231/v2#</mdefNamespaces>
+                    <mdefNamespaces>http://uri.etsi.org/01903/v1.3.2#</mdefNamespaces>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-core</artifactId>
+                        <version>2.17.0</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+ <!--           <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>xmlbeans-maven-plugin</artifactId>
                 <version>2.3.3</version>
@@ -38,11 +67,11 @@
                 </executions>
                 <inherited>true</inherited>
                 <configuration>
-                    <schemaDirectory>src/main/xsd</schemaDirectory>
+                    <schemaDirectory>src/main/schema</schemaDirectory>
                     <download>false</download>
                 </configuration>
             </plugin>            
-        </plugins>
+ -->       </plugins>
     </build>
     <dependencies>
         <dependency>
