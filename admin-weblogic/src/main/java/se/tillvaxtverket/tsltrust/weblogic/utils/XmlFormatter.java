@@ -40,7 +40,7 @@ public class XmlFormatter {
     public XmlFormatter() {
     }
 
-/*    public String format(String unformattedXml) {
+    public String format(String unformattedXml) {
         try {
             final Document document = parseXmlFile(unformattedXml);
 
@@ -71,5 +71,5 @@ public class XmlFormatter {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }*/
+    }
 }

@@ -17,9 +17,6 @@
 package se.tillvaxtverket.tsltrust.weblogic.content;
 
 import com.aaasec.lib.aaacert.AaaCertificate;
-import com.aaasec.lib.crypto.xml.XmlBeansUtil;
-import org.apache.xmlbeans.XmlException;
-import org.apache.xmlbeans.XmlObject;
 import se.tillvaxtverket.tsltrust.weblogic.content.ts.TrustServiceInformation;
 import se.tillvaxtverket.tsltrust.weblogic.data.TslMetaData;
 import se.tillvaxtverket.tsltrust.weblogic.data.TslCertificates;
@@ -31,11 +28,9 @@ import se.tillvaxtverket.tsltrust.weblogic.models.InfoTableElements;
 import se.tillvaxtverket.tsltrust.weblogic.models.InfoTableModel;
 import se.tillvaxtverket.tsltrust.weblogic.models.InfoTableSection;
 import java.awt.Font;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateEncodingException;
 import java.util.List;
 import java.util.Locale;
@@ -665,8 +660,6 @@ public class TslExtractorWeb implements HtmlConstants, TTConstants {
         //Output raw XML data
         Transformer transformer;
         try {
-            return new String(XmlBeansUtil.getStyledBytes(XmlObject.Factory.parse(new ByteArrayInputStream(tsl.getBytes()))), StandardCharsets.UTF_8);
-/*
             transformer = TransformerFactory.newInstance().newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 
@@ -681,8 +674,7 @@ public class TslExtractorWeb implements HtmlConstants, TTConstants {
 
             String xmlString = result.getWriter().toString();
             return new XmlFormatter().format(xmlString);
-*/
-        } catch (XmlException | IOException ex) {
+        } catch (TransformerConfigurationException ex) {
             return "<Error>" + ex.getMessage() + "<Error>";
         }
     }
