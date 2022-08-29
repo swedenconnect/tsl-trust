@@ -40,6 +40,7 @@
                 <configuration>
                     <schemaDirectory>src/main/xsd</schemaDirectory>
                     <download>false</download>
+                    <javaSource>1.8</javaSource>
                 </configuration>
             </plugin>            
         </plugins>
@@ -98,10 +99,6 @@
         <dependency>
             <groupId>org.apache.santuario</groupId>
             <artifactId>xmlsec</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>xalan</groupId>
-            <artifactId>xalan</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-logging</groupId>
