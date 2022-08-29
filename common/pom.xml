@@ -5,7 +5,7 @@
     <parent>
         <artifactId>tsl-trust</artifactId>
         <groupId>se.elegnamnden.tsltrust</groupId>
-        <version>1.6.1</version>
+        <version>1.6.2</version>
     </parent>
     <name>TSL Trust - Common</name>
     <artifactId>common</artifactId>
@@ -40,6 +40,7 @@
                 <configuration>
                     <schemaDirectory>src/main/xsd</schemaDirectory>
                     <download>false</download>
+                    <javaSource>1.8</javaSource>
                 </configuration>
             </plugin>            
         </plugins>
@@ -104,11 +105,8 @@
             <artifactId>xmlsec</artifactId>
             <version>1.3.0</version>
             <type>jar</type>
-        </dependency>-->
-        <dependency>
-            <groupId>xalan</groupId>
-            <artifactId>xalan</artifactId>
         </dependency>
+-->
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
